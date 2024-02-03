@@ -1,118 +1,67 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { StyleSheet, View, StatusBar, Appearance } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { setBackgroundColorAsync, setPositionAsync, setButtonStyleAsync } from 'expo-navigation-bar';
+import Home from './components/Home';
+import Search from './components/Search';
+import ShowDetails from './components/ShowDetails';
+import EpisodeDetails from './components/EpisodeDetails';
+import { Show, Episode } from './utils/types';
+import colors from './utils/colors';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+export type RootStackParamList = {
+  Home: undefined;
+  Search: {query: string };
+  ShowDetails: {show: Show};
+  EpisodeDetails: {episode: Episode};
+};
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+export default function App() {
+    const barStyle = Appearance.getColorScheme() === 'dark'? 'light-content' : 'dark-content';
+    return (
+        <NavigationContainer>
+            <StatusBar barStyle={barStyle} backgroundColor='transparent' translucent />
+            <View style={styles.app}>
+                <Stack.Navigator initialRouteName='Home'>
+                    <Stack.Screen
+                        name='Home'
+                        component={Home}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name='Search'
+                        component={Search}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name='ShowDetails'
+                        component={ShowDetails}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name='EpisodeDetails'
+                        component={EpisodeDetails}
+                        options={{ headerShown: false }}
+                    />
+                </Stack.Navigator>
+            </View>
+        </NavigationContainer>
+    );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
+    app: {
+        backgroundColor: colors.surface,
+        flex: 1
+    }
 });
 
-export default App;
+// A little trick ;)
+// For some reason, when the navigation bar's color is set to transparent, a
+// translucent background color is set by default (notice the difference between
+// transparent and translucent). We've got to trick it into thinking that the
+// background is not transparent. Values smaller than 0.002 are not accepted.
+setBackgroundColorAsync('rgba(0, 0, 0, 0.002)');
+setPositionAsync('absolute');
+setButtonStyleAsync(Appearance.getColorScheme() === 'dark' ? 'light' : 'dark');
