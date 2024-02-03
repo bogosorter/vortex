@@ -26,6 +26,7 @@ export type ShowPreview = {
     artwork: string;
     feedUrl: string;
     color: Promise<string>;
+    xml: Promise<any>;
 };
 
 export type PlaybackState = {

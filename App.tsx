@@ -32,7 +32,11 @@ export default function App() {
                     <Stack.Screen
                         name='Search'
                         component={Search}
-                        options={{ headerShown: false }}
+                        options={({route}) => ({
+                            title: route.params.query,
+                            headerStyle: {backgroundColor: colors.surface},
+                            headerTintColor: colors.onSurface,
+                        })}
                     />
                     <Stack.Screen
                         name='ShowDetails'

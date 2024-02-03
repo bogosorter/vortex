@@ -1,11 +1,49 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { statusBarHeight, navigationBarHeight } from '../utils/dimensions';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { useState, useMemo } from 'react';
+import { CircleSnail } from 'react-native-progress';
+import Artwork from './Artwork';
+import { searchShow, getShow } from '../utils/api';
+import { navigationBarHeight } from '../utils/dimensions';
+import { ShowPreview } from '../utils/types';
 import colors from '../utils/colors';
 
-export default function Search() {
+import { RootStackParamList } from '../App';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+type Props = NativeStackScreenProps<RootStackParamList, 'Search'>;
+
+export default function Search({ route, navigation }: Props) {
+    const [result, setResult] = useState<ShowPreview[]>([]);
+    const [searching, setSearching] = useState(false);
+    useMemo(async () => {
+        const shows = await searchShow(route.params.query);
+        setResult(shows);
+        setSearching(false);
+    }, []);
+
+    const content = searching ? (
+        <View style={styles.loadingCircle}>
+            <CircleSnail size={40} indeterminate={true} color={colors.onSurface} />
+        </View>
+    ) : (
+        <ScrollView contentContainerStyle={styles.scrollView}>
+            {result.map((showPreview, index) => (
+                <Artwork
+                    key={index}
+                    url={showPreview.artwork}
+                    size={150}
+                    margin={10}
+                    onPress={async () => {
+                        const show = await getShow(showPreview);
+                        navigation.navigate('ShowDetails', {show})
+                    }}
+                />
+            ))}
+        </ScrollView>
+    )
+
     return (
         <View style={styles.search}>
-            <Text>Search</Text>
+            {content}
         </View>
     );
 }
@@ -14,7 +52,17 @@ const styles = StyleSheet.create({
     search: {
         flex: 1,
         backgroundColor: colors.surface,
-        paddingTop: statusBarHeight,
         paddingBottom: navigationBarHeight
+    },
+    scrollView: {
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-evenly'
+    },
+    loadingCircle: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
