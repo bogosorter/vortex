@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useState, useMemo } from 'react';
 import { CircleSnail } from 'react-native-progress';
 import Artwork from './Artwork';
@@ -27,19 +27,19 @@ export default function Search({ route, navigation }: Props) {
     ) : (
         <ScrollView contentContainerStyle={styles.scrollView}>
             {result.map((showPreview, index) => (
-                <Artwork
-                    key={index}
-                    url={showPreview.artwork}
-                    size={150}
-                    margin={10}
-                    onPress={async () => {
-                        const show = await getShow(showPreview);
-                        navigation.navigate('ShowDetails', {show})
-                    }}
-                />
+                <TouchableOpacity key={index} onPress={async () => {
+                    const show = await getShow(showPreview);
+                    navigation.navigate('ShowDetails', {show})
+                }}>
+                    <Artwork
+                        url={showPreview.artwork}
+                        size={150}
+                        margin={10}
+                    />
+                </TouchableOpacity>
             ))}
         </ScrollView>
-    )
+    );
 
     return (
         <View style={styles.search}>

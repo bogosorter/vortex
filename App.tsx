@@ -7,7 +7,7 @@ import Search from './components/Search';
 import ShowDetails from './components/ShowDetails';
 import EpisodeDetails from './components/EpisodeDetails';
 import { Show, Episode } from './utils/types';
-import colors from './utils/colors';
+import colors, { darkColors } from './utils/colors';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -41,7 +41,11 @@ export default function App() {
                     <Stack.Screen
                         name='ShowDetails'
                         component={ShowDetails}
-                        options={{ headerShown: false }}
+                        options={{
+                            headerTransparent: true,
+                            headerTintColor: darkColors.onSurface,
+                            title: ''
+                        }}
                     />
                     <Stack.Screen
                         name='EpisodeDetails'
