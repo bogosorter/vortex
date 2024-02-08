@@ -1,6 +1,8 @@
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import useStore from '../utils/store';
+import EpisodePreview from './EpisodePreview';
+import Artwork from './Artwork';
 import { statusBarHeight, navigationBarHeight } from '../utils/dimensions';
 import colors from '../utils/colors';
 
@@ -10,14 +12,35 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function Home({navigation}: Props) {
     const [query, setQuery] = useState('');
-
+    const shows = useStore(store => store.library.shows);
+    const feed = useStore(store => store.library.getFeed())
+    
     return (
         <View style={styles.home}>
-            <TextInput
-                style={styles.searchBox}
-                onChangeText={setQuery}
-                placeholder='Search'
-                onSubmitEditing={() => navigation.navigate('Search', {query})}
+            <FlatList
+                ListHeaderComponent={<>
+                    <TextInput
+                        style={styles.searchBox}
+                        onChangeText={setQuery}
+                        placeholder='Search'
+                        onSubmitEditing={() => navigation.navigate('Search', {query})}
+                    />
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        {shows.map((show, index) => (
+                            <TouchableOpacity key={index} onPress={() => {
+                                navigation.navigate('ShowDetails', {show})
+                            }}>
+                                <Artwork
+                                url={show.artwork}
+                                size={160}
+                                margin={10}
+                            />
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </>}
+                data={feed}
+                renderItem={({item}) => <EpisodePreview episode={item} />}
             />
         </View>
     );

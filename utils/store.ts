@@ -1,4 +1,4 @@
-import { createStore } from 'zustand';
+import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import RNFS from 'react-native-fs';
 import { MMKV } from 'react-native-mmkv';
@@ -52,7 +52,7 @@ type Store = {
 const storage = new MMKV();
 const downloadDirectory = RNFS.DownloadDirectoryPath + '/downloads';
 
-const useStore = createStore<Store>()(immer((set, get) => ({
+const useStore = create<Store>()(immer((set, get) => ({
     library: {
         shows: [] as Show[],
         savedEpisodes: [] as Episode[],
@@ -82,7 +82,9 @@ const useStore = createStore<Store>()(immer((set, get) => ({
             return get().library.playbackStates[episode.guid] || { position: 0, played: false } as PlaybackState;
         },
         getFeed: () => {
-            return get().library.shows.flatMap(show => show.episodes).concat(get().library.savedEpisodes);
+            return get().library.shows.flatMap(show => show.episodes).concat(get().library.savedEpisodes).sort(
+                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
         },
 
         storeShows: () => {
