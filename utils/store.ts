@@ -62,21 +62,25 @@ const useStore = create<Store>()(immer((set, get) => ({
             set(state => {
                 state.library.shows.push(show);
             });
+            get().library.storeShows();
         },
         unsubscribe: (show) => {
             set(state => {
                 state.library.shows = state.library.shows.filter(s => s.feedUrl !== show.feedUrl);
             });
+            get().library.storeShows();
         },
         saveEpisode: (episode) => {
             set(state => {
                 state.library.savedEpisodes.push(episode);
             });
+            get().library.storeSavedEpisodes();
         },
         removeSavedEpisode: (episode) => {
             set(state => {
                 state.library.savedEpisodes = state.library.savedEpisodes.filter(e => e.guid !== episode.guid);
             });
+            get().library.storeSavedEpisodes();
         },
         getPlaybackState: (episode) => {
             return get().library.playbackStates[episode.guid] || { position: 0, played: false } as PlaybackState;
@@ -141,6 +145,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             set(state => {
                 state.downloads.downloadInfo[episode.guid].status = status;
             })
+            get().downloads.store();
         },
         remove: async (episode) => {
             const path = get().downloads.getPath(episode);
@@ -149,6 +154,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             set(state => {
                 state.downloads.downloadInfo[episode.guid] = downloadInfo;
             });
+            get().downloads.store();
         },
         getInfo: (episode) => {
             const info = get().downloads.downloadInfo[episode.guid];
@@ -197,6 +203,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             const playbackState = get().library.getPlaybackState(episode);
             await TrackPlayer.seekTo(playbackState.position);
             if (start) await TrackPlayer.play();
+            get().player.store();
         },
         onEnd: async () => {
             const episode = get().player.currentEpisode!;
@@ -205,9 +212,11 @@ const useStore = create<Store>()(immer((set, get) => ({
             playbackState.position = 0;
             set(state => {
                 state.library.playbackStates[episode.guid] = playbackState;
+                state.player.currentEpisode = null;
             });
             await TrackPlayer.stop();
             await TrackPlayer.reset();
+            get().library.storePlaybackStates();
         },
         updateState: (playerState) => {
             set(state => {
@@ -226,5 +235,11 @@ const useStore = create<Store>()(immer((set, get) => ({
         }
     }
 })));
+
+useStore.getState().library.loadShows();
+useStore.getState().library.loadSavedEpisodes();
+useStore.getState().library.loadPlaybackStates();
+useStore.getState().downloads.load();
+useStore.getState().player.load();
 
 export default useStore;
