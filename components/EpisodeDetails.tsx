@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, ScrollView, ImageBackground } from 'react-nativ
 import { LinearGradient } from 'expo-linear-gradient';
 import Color from 'color';
 import HTML from './HTML';
-import { navigationBarHeight } from '../utils/dimensions';
+import EpisodePlayButton from './EpisodePlayButton';
 import colors, { darkColors } from '../utils/colors';
 
 import { RootStackParamList } from '../App';
@@ -32,6 +32,7 @@ export default function EpisodeDetails({ route }: Props) {
                             <Text style={styles.title}>{episode.title}</Text>
                             <Text style={styles.show}>{episode.showTitle}</Text>
                         </View>
+                        <EpisodePlayButton episode={episode} />
                     </View>
                 </View>
                 <View style={styles.descriptionContainer}>
@@ -46,8 +47,7 @@ function getStyles(backgroundColor: string) {
     return StyleSheet.create({
         episodeDetails: {
             flex: 1,
-            backgroundColor: colors.surface,
-            paddingBottom: navigationBarHeight
+            backgroundColor: colors.surface
         },
         artwork: {
             width: '100%',

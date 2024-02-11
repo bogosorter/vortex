@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react';
 import { CircleSnail } from 'react-native-progress';
 import Artwork from './Artwork';
 import { searchShow, getShow } from '../utils/api';
-import { navigationBarHeight } from '../utils/dimensions';
 import { ShowPreview } from '../utils/types';
 import colors from '../utils/colors';
 
@@ -51,8 +50,7 @@ export default function Search({ route, navigation }: Props) {
 const styles = StyleSheet.create({
     search: {
         flex: 1,
-        backgroundColor: colors.surface,
-        paddingBottom: navigationBarHeight
+        backgroundColor: colors.surface
     },
     scrollView: {
         display: 'flex',

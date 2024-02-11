@@ -3,7 +3,7 @@ import { useState } from 'react';
 import useStore from '../utils/store';
 import EpisodePreview from './EpisodePreview';
 import Artwork from './Artwork';
-import { statusBarHeight, navigationBarHeight } from '../utils/dimensions';
+import { statusBarHeight } from '../utils/dimensions';
 import colors from '../utils/colors';
 
 import { RootStackParamList } from '../App';
@@ -50,8 +50,7 @@ const styles = StyleSheet.create({
     home: {
         flex: 1,
         backgroundColor: colors.surface,
-        paddingTop: statusBarHeight,
-        paddingBottom: navigationBarHeight
+        paddingTop: statusBarHeight
     },
     searchBox: {
         backgroundColor: colors.surfaceVariant,

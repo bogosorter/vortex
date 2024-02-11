@@ -1,28 +1,30 @@
-import { StyleSheet, View, StatusBar, Appearance } from 'react-native';
+import { StyleSheet, View, StatusBar, Appearance, Dimensions } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { setBackgroundColorAsync, setPositionAsync, setButtonStyleAsync } from 'expo-navigation-bar';
 import Home from './components/Home';
 import Search from './components/Search';
 import ShowDetails from './components/ShowDetails';
 import EpisodeDetails from './components/EpisodeDetails';
+import Player from './components/Player';
 import { Show, Episode } from './utils/types';
 import colors, { darkColors } from './utils/colors';
 
 export type RootStackParamList = {
-  Home: undefined;
-  Search: {query: string };
-  ShowDetails: {show: Show};
-  EpisodeDetails: {episode: Episode};
+    Home: undefined;
+    Search: { query: string };
+    ShowDetails: { show: Show };
+    EpisodeDetails: { episode: Episode };
 };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-    const barStyle = Appearance.getColorScheme() === 'dark'? 'light-content' : 'dark-content';
+    const barStyle = Appearance.getColorScheme() === 'dark' ? 'light-content' : 'dark-content';
     return (
-        <NavigationContainer>
-            <StatusBar barStyle={barStyle} backgroundColor='transparent' translucent />
-            <View style={styles.app}>
+        <GestureHandlerRootView style={styles.app}>
+            <NavigationContainer>
+                <StatusBar barStyle={barStyle} backgroundColor='transparent' translucent />
                 <Stack.Navigator initialRouteName='Home'>
                     <Stack.Screen
                         name='Home'
@@ -32,9 +34,9 @@ export default function App() {
                     <Stack.Screen
                         name='Search'
                         component={Search}
-                        options={({route}) => ({
+                        options={({ route }) => ({
                             title: route.params.query,
-                            headerStyle: {backgroundColor: colors.surface},
+                            headerStyle: { backgroundColor: colors.surface },
                             headerTintColor: colors.onSurface,
                         })}
                     />
@@ -57,8 +59,9 @@ export default function App() {
                         }}
                     />
                 </Stack.Navigator>
-            </View>
-        </NavigationContainer>
+                <Player />
+            </NavigationContainer>
+        </GestureHandlerRootView>
     );
 }
 

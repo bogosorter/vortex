@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import RNFS from 'react-native-fs';
 import { MMKV } from 'react-native-mmkv';
 import TrackPlayer, { State as PlayerState } from 'react-native-track-player';
+import setupPlayer from './setupPlayer';
 import { Show, Episode, PlaybackState, DownloadInfo, DownloadStatus } from './types';
 
 type Store = {
@@ -32,6 +33,7 @@ type Store = {
         remove: (episode: Episode) => Promise<void>;
         getInfo: (episode: Episode) => DownloadInfo;
         getPath: (episode: Episode) => string;
+        createPath: (episode: Episode) => string;
 
         store: () => void;
         load: () => void;
@@ -137,7 +139,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             });
 
             await RNFS.mkdir(downloadDirectory);
-            const path = get().downloads.getPath(episode);
+            const path = get().downloads.createPath(episode);
             const download = RNFS.downloadFile({ fromUrl: episode.url, toFile: path });
             
             const result = await download.promise;
@@ -164,6 +166,12 @@ const useStore = create<Store>()(immer((set, get) => ({
         getPath: (episode) => {
             const downloadInfo = get().downloads.getInfo(episode);
             if (downloadInfo.id !== -1) return downloadDirectory + `/${downloadInfo.id}.mp3`;
+            return episode.url;
+        },
+        createPath: (episode) => {
+            const downloadInfo = get().downloads.getInfo(episode);
+            if (downloadInfo.id !== -1) return downloadDirectory + `/${downloadInfo.id}.mp3`;
+            
             const id = (storage.getNumber('downloadId') || -1) + 1;
             storage.set('downloadId', id);
             downloadInfo.id = id;
@@ -232,6 +240,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             set(state => {
                 state.player.currentEpisode = currentEpisode;
             });
+            if (currentEpisode) get().player.play(currentEpisode, false);
         }
     }
 })));
@@ -240,6 +249,9 @@ useStore.getState().library.loadShows();
 useStore.getState().library.loadSavedEpisodes();
 useStore.getState().library.loadPlaybackStates();
 useStore.getState().downloads.load();
-useStore.getState().player.load();
+(async () => {
+    await setupPlayer();
+    useStore.getState().player.load();
+})();
 
 export default useStore;

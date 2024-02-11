@@ -3,7 +3,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Color from 'color';
 import EpisodePreview from './EpisodePreview';
 import SubscribeButton from './SubscribeButton';
-import { navigationBarHeight } from '../utils/dimensions';
 import colors, { darkColors } from '../utils/colors';
 
 import { RootStackParamList } from '../App';
@@ -55,18 +54,15 @@ function getStyles(backgroundColor: string) {
     return StyleSheet.create({
         showDetails: {
             flex: 1,
-            backgroundColor: colors.surface,
-            paddingBottom: navigationBarHeight
+            backgroundColor: colors.surface
         },
         artwork: {
             width: '100%',
-            aspectRatio: 1,
-            justifyContent: 'flex-end'
+            aspectRatio: 1
         },
         artworkDarkener: {
             width: '100%',
             aspectRatio: 1,
-            position: 'absolute',
             backgroundColor: 'rgba(0, 0, 0, 0.4)'
         },
         headerWrapper: {
