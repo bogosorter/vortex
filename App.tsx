@@ -50,7 +50,11 @@ export default function App() {
                     <Stack.Screen
                         name='EpisodeDetails'
                         component={EpisodeDetails}
-                        options={{ headerShown: false }}
+                        options={{
+                            headerTransparent: true,
+                            headerTintColor: darkColors.onSurface,
+                            title: ''
+                        }}
                     />
                 </Stack.Navigator>
             </View>

@@ -23,7 +23,11 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     return (
         <TouchableOpacity onPress={openDetails}>
             <View style={styles.preview}>
-                {showArtwork && <Artwork url={episode.artwork} size={80} margin={0} />}
+                {showArtwork && (
+                    <View style={styles.artworkContainer}>
+                        <Artwork url={episode.artwork} size={80} margin={0} />
+                    </View>
+                )}
                 <View style={styles.text}>
                     <Text style={styles.title} numberOfLines={1}>
                         {episode.title}
@@ -48,9 +52,11 @@ const styles = StyleSheet.create({
         borderBottomWidth: 2,
         borderBottomColor: colors.surfaceVariant
     },
+    artworkContainer: {
+        marginRight: 10
+    },
     text: {
-        flex: 1,
-        marginLeft: 10
+        flex: 1
     },
     title: {
         fontSize: 16,
