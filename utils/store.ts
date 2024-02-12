@@ -140,6 +140,7 @@ const useStore = create<Store>()(immer((set, get) => ({
 
             await RNFS.mkdir(downloadDirectory);
             const path = get().downloads.createPath(episode);
+            console.log(path);
             const download = RNFS.downloadFile({ fromUrl: episode.url, toFile: path });
             
             const result = await download.promise;
@@ -152,9 +153,8 @@ const useStore = create<Store>()(immer((set, get) => ({
         remove: async (episode) => {
             const path = get().downloads.getPath(episode);
             await RNFS.unlink(path);
-            const downloadInfo = get().downloads.getInfo(episode);
             set(state => {
-                state.downloads.downloadInfo[episode.guid] = downloadInfo;
+                state.downloads.downloadInfo[episode.guid].status = DownloadStatus.NOT_DOWNLOADED;
             });
             get().downloads.store();
         },
@@ -171,13 +171,11 @@ const useStore = create<Store>()(immer((set, get) => ({
         createPath: (episode) => {
             const downloadInfo = get().downloads.getInfo(episode);
             if (downloadInfo.id !== -1) return downloadDirectory + `/${downloadInfo.id}.mp3`;
-            
             const id = (storage.getNumber('downloadId') || -1) + 1;
-            storage.set('downloadId', id);
-            downloadInfo.id = id;
             set(state => {
-                state.downloads.downloadInfo[episode.guid] = downloadInfo;
+                state.downloads.downloadInfo[episode.guid] = {...downloadInfo, id};
             });
+            get().downloads.store();
             return downloadDirectory + `/${id}.mp3`;
         },
 

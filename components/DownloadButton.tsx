@@ -1,9 +1,9 @@
 import { TouchableOpacity } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { Circle } from 'react-native-progress';
+import { CircleSnail } from 'react-native-progress';
 import useStore from '../utils/store';
 import { Episode, DownloadStatus } from '../utils/types';
-import { lightColors } from '../utils/colors';
+import { darkColors } from '../utils/colors';
 
 export default function DownloadButton({episode}: {episode: Episode}) {
     const downloadInfo = useStore(state => state.downloads.getInfo(episode));
@@ -12,23 +12,23 @@ export default function DownloadButton({episode}: {episode: Episode}) {
 
     if (downloadInfo.status === DownloadStatus.DOWNLOADED) return (
         <TouchableOpacity onPress={() => remove(episode)}>
-            <MaterialIcons name='download-done' size={30} color={lightColors.onSurface} />
+            <MaterialIcons name='download-done' size={30} color={darkColors.onSurface} />
         </TouchableOpacity>
     );
 
     if (downloadInfo.status === DownloadStatus.DOWNLOADING) return (
-        <Circle size={30} indeterminate color={lightColors.onSurface} />
+        <CircleSnail size={30} color={darkColors.onSurface} />
     );
 
     if (downloadInfo.status === DownloadStatus.ERROR) return (
         <TouchableOpacity onPress={() => remove(episode)}>
-            <MaterialIcons name='error' size={30} color={lightColors.onSurface} />
+            <MaterialIcons name='error' size={30} color={darkColors.onSurface} />
         </TouchableOpacity>
     );
 
     return (
         <TouchableOpacity onPress={() => download(episode)}>
-            <MaterialIcons name='download' size={30} color={lightColors.onSurface} />
+            <MaterialIcons name='download' size={30} color={darkColors.onSurface} />
         </TouchableOpacity>
     );
 }

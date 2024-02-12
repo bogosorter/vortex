@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, ScrollView, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Color from 'color';
+import DownloadButton from './DownloadButton';
 import HTML from './HTML';
 import EpisodePlayButton from './EpisodePlayButton';
 import colors, { darkColors } from '../utils/colors';
@@ -13,7 +14,6 @@ export default function EpisodeDetails({ route }: Props) {
     const episode = route.params.episode;
     const backgroundColor = new Color(episode.color).darken(0.5).hex();
     const styles = getStyles(backgroundColor);
-
 
     return (
         <View style={styles.episodeDetails}>
@@ -33,6 +33,9 @@ export default function EpisodeDetails({ route }: Props) {
                             <Text style={styles.show}>{episode.showTitle}</Text>
                         </View>
                         <EpisodePlayButton episode={episode} />
+                    </View>
+                    <View style={styles.buttons}>
+                        <DownloadButton episode={episode} />
                     </View>
                 </View>
                 <View style={styles.descriptionContainer}>
@@ -88,6 +91,10 @@ function getStyles(backgroundColor: string) {
         },
         descriptionContainer: {
             margin: 20
+        },
+        buttons: {
+            flexDirection: 'row',
+            justifyContent: 'space-around'
         }
     });
 }
