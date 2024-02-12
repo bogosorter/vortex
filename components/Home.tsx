@@ -1,5 +1,6 @@
 import { StyleSheet, TextInput, View, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useStore from '../utils/store';
 import EpisodePreview from './EpisodePreview';
 import Artwork from './Artwork';
@@ -10,37 +11,44 @@ import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-export default function Home({navigation}: Props) {
+export default function Home({ navigation }: Props) {
     const [query, setQuery] = useState('');
     const shows = useStore(store => store.library.shows);
     const feed = useStore(store => store.library.getFeed())
-    
+
     return (
         <View style={styles.home}>
             <FlatList
                 ListHeaderComponent={<>
-                    <TextInput
-                        style={styles.searchBox}
-                        onChangeText={setQuery}
-                        placeholder='Search'
-                        onSubmitEditing={() => navigation.navigate('Search', {query})}
-                    />
+                    <View style={styles.header}>
+                        <TextInput
+                            style={styles.searchBox}
+                            onChangeText={setQuery}
+                            placeholder='Search'
+                            onSubmitEditing={() => navigation.navigate('Search', { query })}
+                        />
+                        <TouchableOpacity onPress={() => navigation.navigate('DownloadedEpisodes')}>
+                            <View style={styles.downloadsButton}>
+                                <MaterialIcons name='download' size={28} color={colors.onSurfaceVariant} />
+                            </View>
+                        </TouchableOpacity>
+                    </View>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         {shows.map((show, index) => (
                             <TouchableOpacity key={index} onPress={() => {
-                                navigation.navigate('ShowDetails', {show})
+                                navigation.navigate('ShowDetails', { show })
                             }}>
                                 <Artwork
-                                url={show.artwork}
-                                size={160}
-                                margin={10}
-                            />
+                                    url={show.artwork}
+                                    size={160}
+                                    margin={10}
+                                />
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
                 </>}
                 data={feed}
-                renderItem={({item}) => <EpisodePreview episode={item} />}
+                renderItem={({ item }) => <EpisodePreview episode={item} />}
             />
         </View>
     );
@@ -52,13 +60,28 @@ const styles = StyleSheet.create({
         backgroundColor: colors.surface,
         paddingTop: statusBarHeight
     },
-    searchBox: {
-        backgroundColor: colors.surfaceVariant,
+    header: {
+        flexDirection: 'row',
         margin: 10,
+        marginTop: 20,
+        gap: 10,
+        backgroundColor: colors.surfaceVariant,
         borderRadius: 10,
+        height: 60
+    },
+    searchBox: {
         height: 60,
-        textAlign: 'center',
         color: colors.onSurfaceVariant,
-        fontSize: 28
+        fontSize: 30,
+        padding: 0,
+        flex: 1,
+        paddingLeft: 20
+    },
+    downloadsButton: {
+        height: 60,
+        width: 60,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });

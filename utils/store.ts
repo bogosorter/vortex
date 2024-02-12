@@ -34,6 +34,7 @@ type Store = {
         getInfo: (episode: Episode) => DownloadInfo;
         getPath: (episode: Episode) => string;
         createPath: (episode: Episode) => string;
+        getDownloadedEpisodes: () => Episode[];
 
         store: () => void;
         load: () => void;
@@ -177,6 +178,14 @@ const useStore = create<Store>()(immer((set, get) => ({
             });
             get().downloads.store();
             return downloadDirectory + `/${id}.mp3`;
+        },
+        getDownloadedEpisodes: () => {
+            const result = [];
+            for (const episode of get().library.getFeed()) {
+                const info = get().downloads.getInfo(episode);
+                if (info.status === DownloadStatus.DOWNLOADED) result.push(episode);
+            }
+            return result;
         },
 
         store: () => {
