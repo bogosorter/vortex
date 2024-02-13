@@ -4,6 +4,7 @@ import RNFS from 'react-native-fs';
 import { MMKV } from 'react-native-mmkv';
 import TrackPlayer, { State as PlayerState } from 'react-native-track-player';
 import setupPlayer from './setupPlayer';
+import { getEpisodes } from './api';
 import { Show, Episode, PlaybackState, DownloadInfo, DownloadStatus } from './types';
 
 type Store = {
@@ -20,6 +21,8 @@ type Store = {
         removeSavedEpisode: (episode: Episode) => void;
         getPlaybackState: (episode: Episode) => PlaybackState;
         getFeed: () => Episode[];
+        refresh: () => Promise<void>;
+        refreshShow: (show: Show) => Promise<void>;
 
         storeShows: () => void;
         loadShows: () => void;
@@ -101,6 +104,18 @@ const useStore = create<Store>()(immer((set, get) => ({
             return result.sort(
                 (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
             );
+        },
+        refresh: async () => {
+            const shows = get().library.shows;
+            await Promise.all(shows.map(show => get().library.refreshShow(show)));
+        },
+        refreshShow: async (show) => {
+            const episodes = await getEpisodes(show);
+            set(state => {
+                const index = state.library.shows.findIndex(s => s.feedUrl === show.feedUrl);
+                state.library.shows[index].episodes = episodes;
+            });
+            get().library.storeShows();
         },
 
         storeShows: () => {

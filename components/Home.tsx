@@ -1,5 +1,5 @@
-import { StyleSheet, TextInput, View, FlatList, ScrollView, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { StyleSheet, TextInput, View, FlatList, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useStore from '../utils/store';
 import EpisodePreview from './EpisodePreview';
@@ -15,6 +15,9 @@ export default function Home({ navigation }: Props) {
     const [query, setQuery] = useState('');
     const shows = useStore(store => store.library.shows);
     const feed = useStore(store => store.library.getFeed())
+    const refresh = useStore(store => store.library.refresh);
+
+    useMemo(() => refresh(), []);
 
     return (
         <View style={styles.home}>
@@ -54,6 +57,8 @@ export default function Home({ navigation }: Props) {
                 </>}
                 data={feed}
                 renderItem={({ item }) => <EpisodePreview episode={item} />}
+                keyExtractor={item => item.guid}
+                refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
             />
         </View>
     );

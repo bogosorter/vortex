@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View, FlatList, ImageBackground } from 'react-native';
+import { useMemo } from 'react';
+import { StyleSheet, Text, View, FlatList, ImageBackground, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Color from 'color';
 import EpisodePreview from './EpisodePreview';
 import SubscribeButton from './SubscribeButton';
+import useStore from '../utils/store';
 import colors, { darkColors } from '../utils/colors';
 
 import { RootStackParamList } from '../App';
@@ -10,9 +12,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 type Props = NativeStackScreenProps<RootStackParamList, 'ShowDetails'>;
 
 export default function ShowDetails({route}: Props) {
+    const refresh = useStore(store => store.library.refreshShow)
     const show = route.params.show;
     const backgroundColor = new Color(show.color).darken(0.5).string();
     const styles = getStyles(backgroundColor);
+
+    useMemo(() => refresh(show), []);
 
     return (
         <View style={styles.showDetails}>
@@ -45,6 +50,7 @@ export default function ShowDetails({route}: Props) {
                     return <EpisodePreview episode={item} showArtwork={false} />;
                 }}
                 stickyHeaderIndices={[1]}
+                refreshControl={<RefreshControl refreshing={false} onRefresh={() => refresh(show)} />}
             />
         </View>
     );
