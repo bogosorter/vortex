@@ -53,7 +53,7 @@ type Store = {
 };
 
 const storage = new MMKV();
-const downloadDirectory = RNFS.DownloadDirectoryPath + '/downloads';
+const downloadDirectory = RNFS.DownloadDirectoryPath + '/vortex';
 
 const useStore = create<Store>()(immer((set, get) => ({
     library: {
@@ -172,7 +172,9 @@ const useStore = create<Store>()(immer((set, get) => ({
         createPath: (episode) => {
             const downloadInfo = get().downloads.getInfo(episode);
             if (downloadInfo.id !== -1) return downloadDirectory + `/${downloadInfo.id}.mp3`;
-            const id = (storage.getNumber('downloadId') || -1) + 1;
+            const id = Number(storage.getString('downloadId') || '-1') + 1;
+            storage.set('downloadId', String(id));
+            console.log(id);
             set(state => {
                 state.downloads.downloadInfo[episode.guid] = {...downloadInfo, id};
             });
