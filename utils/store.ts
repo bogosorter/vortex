@@ -10,6 +10,8 @@ type Store = {
     library: {
         shows: Show[];
         savedEpisodes: Episode[];
+        // Ensures that checking wether an episode is saved is fast
+        saved: { [key: string]: boolean };
         playbackStates: { [key: string]: PlaybackState };
 
         subscribe: (show: Show) => void;
@@ -59,6 +61,7 @@ const useStore = create<Store>()(immer((set, get) => ({
     library: {
         shows: [] as Show[],
         savedEpisodes: [] as Episode[],
+        saved: {} as { [key: string]: boolean },
         playbackStates: {} as { [key: string]: PlaybackState },
 
         subscribe: (show) => {
@@ -76,12 +79,14 @@ const useStore = create<Store>()(immer((set, get) => ({
         saveEpisode: (episode) => {
             set(state => {
                 state.library.savedEpisodes.push(episode);
+                state.library.saved[episode.guid] = true;
             });
             get().library.storeSavedEpisodes();
         },
         removeSavedEpisode: (episode) => {
             set(state => {
                 state.library.savedEpisodes = state.library.savedEpisodes.filter(e => e.guid !== episode.guid);
+                state.library.saved[episode.guid] = false;
             });
             get().library.storeSavedEpisodes();
         },
@@ -89,7 +94,11 @@ const useStore = create<Store>()(immer((set, get) => ({
             return get().library.playbackStates[episode.guid] || { position: 0, played: false } as PlaybackState;
         },
         getFeed: () => {
-            return get().library.shows.flatMap(show => show.episodes).concat(get().library.savedEpisodes).sort(
+            const savedEpisodes = get().library.savedEpisodes;
+            const episodesFromShows = get().library.shows.flatMap(show => show.episodes);
+            const saved = get().library.saved;
+            const result = savedEpisodes.concat(episodesFromShows.filter(episode => !saved[episode.guid]))
+            return result.sort(
                 (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
             );
         },
@@ -107,12 +116,16 @@ const useStore = create<Store>()(immer((set, get) => ({
         },
         storeSavedEpisodes: () => {
             storage.set('savedEpisodes', JSON.stringify(get().library.savedEpisodes));
+            storage.set('saved', JSON.stringify(get().library.saved));
         },
         loadSavedEpisodes: () => {
             const savedEpisodes = storage.getString('savedEpisodes');
+            const saved = storage.getString('saved');
             if (savedEpisodes) {
                 set(state => {
-                    state.library.savedEpisodes = JSON.parse(savedEpisodes) as Episode[];
+                    state.library.savedEpisodes = JSON.parse(savedEpisodes);
+                    // saved will never be null if savedEpisodes is not null
+                    state.library.saved = JSON.parse(saved!);
                 });
             }
         },

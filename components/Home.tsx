@@ -27,8 +27,13 @@ export default function Home({ navigation }: Props) {
                             placeholder='Search'
                             onSubmitEditing={() => navigation.navigate('Search', { query })}
                         />
+                        <TouchableOpacity onPress={() => navigation.navigate('SavedEpisodes')}>
+                            <View style={styles.navigationButton}>
+                                <MaterialIcons name='library-add-check' size={28} color={colors.onSurfaceVariant} />
+                            </View>
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('DownloadedEpisodes')}>
-                            <View style={styles.downloadsButton}>
+                            <View style={styles.navigationButton}>
                                 <MaterialIcons name='download' size={28} color={colors.onSurfaceVariant} />
                             </View>
                         </TouchableOpacity>
@@ -64,10 +69,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         margin: 10,
         marginTop: 20,
-        gap: 10,
         backgroundColor: colors.surfaceVariant,
         borderRadius: 10,
-        height: 60
+        height: 60,
+        paddingRight: 10
     },
     searchBox: {
         height: 60,
@@ -77,9 +82,9 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingLeft: 20
     },
-    downloadsButton: {
+    navigationButton: {
         height: 60,
-        width: 60,
+        width: 45,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'

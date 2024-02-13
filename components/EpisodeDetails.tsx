@@ -4,6 +4,7 @@ import Color from 'color';
 import DownloadButton from './DownloadButton';
 import HTML from './HTML';
 import EpisodePlayButton from './EpisodePlayButton';
+import SaveEpisodeButton from './SaveEpisodeButton';
 import colors, { darkColors } from '../utils/colors';
 
 import { RootStackParamList } from '../App';
@@ -36,6 +37,7 @@ export default function EpisodeDetails({ route }: Props) {
                     </View>
                     <View style={styles.buttons}>
                         <DownloadButton episode={episode} />
+                        <SaveEpisodeButton episode={episode} />
                     </View>
                 </View>
                 <View style={styles.descriptionContainer}>
@@ -94,7 +96,8 @@ function getStyles(backgroundColor: string) {
         },
         buttons: {
             flexDirection: 'row',
-            justifyContent: 'space-around'
+            justifyContent: 'center',
+            gap: 20
         }
     });
 }

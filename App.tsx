@@ -8,6 +8,7 @@ import Search from './components/Search';
 import ShowDetails from './components/ShowDetails';
 import EpisodeDetails from './components/EpisodeDetails';
 import DownloadedEpisodes from './components/DownloadedEpisodes';
+import SavedEpisodes from './components/SavedEpisodes';
 import Player from './components/Player';
 import { Show, Episode } from './utils/types';
 import colors, { darkColors } from './utils/colors';
@@ -18,6 +19,7 @@ export type RootStackParamList = {
     ShowDetails: { show: Show };
     EpisodeDetails: { episode: Episode };
     DownloadedEpisodes: undefined;
+    SavedEpisodes: undefined;
 };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -65,6 +67,15 @@ export default function App() {
                         component={DownloadedEpisodes}
                         options={{
                             title: 'Downloaded Episodes',
+                            headerStyle: { backgroundColor: colors.surface },
+                            headerTintColor: colors.onSurface,
+                        }}
+                    />
+                    <Stack.Screen
+                        name='SavedEpisodes'
+                        component={SavedEpisodes}
+                        options={{
+                            title: 'Saved Episodes',
                             headerStyle: { backgroundColor: colors.surface },
                             headerTintColor: colors.onSurface,
                         }}

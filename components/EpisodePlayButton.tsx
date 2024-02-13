@@ -30,7 +30,6 @@ export default function EpisodePlayButton({ episode }: { episode: Episode }) {
     )
 }
 
-
 const styles = StyleSheet.create({
     playButton: {
         height: 48,
