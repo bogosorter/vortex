@@ -2,7 +2,8 @@ import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useState, useMemo } from 'react';
 import { CircleSnail } from 'react-native-progress';
 import Artwork from './Artwork';
-import { searchShow, getShow } from '../utils/api';
+import { searchShow } from '../utils/api';
+import { getShow } from '../utils/rss';
 import { ShowPreview } from '../utils/types';
 import colors from '../utils/colors';
 

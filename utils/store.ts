@@ -4,7 +4,7 @@ import RNFS from 'react-native-fs';
 import { MMKV } from 'react-native-mmkv';
 import TrackPlayer, { State as PlayerState } from 'react-native-track-player';
 import setupPlayer from './setupPlayer';
-import { getEpisodes } from './api';
+import { getEpisodes } from './rss';
 import { Show, Episode, PlaybackState, DownloadInfo, DownloadStatus } from './types';
 
 type Store = {
@@ -107,9 +107,20 @@ const useStore = create<Store>()(immer((set, get) => ({
         },
         refresh: async () => {
             const shows = get().library.shows;
-            await Promise.all(shows.map(show => get().library.refreshShow(show)));
+            const result = await Promise.all(shows.map(async (show) => {
+                const episodes = await getEpisodes(show);
+                return { ...show, episodes };
+            }));
+
+            set(state => {
+                state.library.shows = result;
+            });
+            get().library.storeShows();
         },
         refreshShow: async (show) => {
+            const index = get().library.shows.findIndex(s => s.feedUrl === show.feedUrl)
+            if (index == undefined) return;
+
             const episodes = await getEpisodes(show);
             set(state => {
                 const index = state.library.shows.findIndex(s => s.feedUrl === show.feedUrl);
@@ -170,7 +181,13 @@ const useStore = create<Store>()(immer((set, get) => ({
             await RNFS.mkdir(downloadDirectory);
             const path = get().downloads.createPath(episode);
             console.log(path);
-            const download = RNFS.downloadFile({ fromUrl: episode.url, toFile: path });
+            const download = RNFS.downloadFile({
+                fromUrl: episode.url,
+                toFile: path,
+                headers: {
+                    'user-agent': 'vortex'
+                }
+            });
             
             const result = await download.promise;
             const status = result.statusCode === 200 ? DownloadStatus.DOWNLOADED : DownloadStatus.ERROR;
@@ -194,7 +211,7 @@ const useStore = create<Store>()(immer((set, get) => ({
         },
         getPath: (episode) => {
             const downloadInfo = get().downloads.getInfo(episode);
-            if (downloadInfo.id !== -1) return downloadDirectory + `/${downloadInfo.id}.mp3`;
+            if (downloadInfo.status === DownloadStatus.DOWNLOADED) return downloadDirectory + `/${downloadInfo.id}.mp3`;
             return episode.url;
         },
         createPath: (episode) => {
@@ -243,7 +260,8 @@ const useStore = create<Store>()(immer((set, get) => ({
                 artist: episode.showTitle,
                 url: get().downloads.getPath(episode),
                 artwork: episode.artwork,
-                duration: episode.duration
+                duration: episode.duration,
+                userAgent: 'vortex'
             });
             const playbackState = get().library.getPlaybackState(episode);
             await TrackPlayer.seekTo(playbackState.position);
