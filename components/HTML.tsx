@@ -7,6 +7,7 @@ import colors from '../utils/colors';
 // This is a very simple HTML renderer that only supports a few of the most
 // common HTML tags. Unknown tags are rendered as text.
 export default function HTML({ html }: { html: string }) {
+    html = html.replace(/\\u(\d{4})/g, (_, grp) => String.fromCharCode(parseInt(grp, 16)));
     const dom = parseDocument(html);
     const children = dom.children.map((element, index) => {
         return <HTMLComponent key={index} element={element} />;
@@ -62,7 +63,9 @@ const styles = StyleSheet.create({
     },
     p: {
         color: new Color(colors.onSurface).alpha(0.8).string(),
-        fontSize: 14
+        fontSize: 14,
+        textAlign: 'justify',
+        marginBottom: 10
     },
     strong: {
         color: colors.onSurface,

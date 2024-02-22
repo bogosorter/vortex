@@ -38,7 +38,6 @@ export async function getShow(preview: ShowPreview) {
 export async function getEpisodes(show: Show) {
     const rss = await getRSS(show.feedUrl);
     const result = getAll(rss, 'item').map((episode) => parseEpisode(show, episode));
-    if (show.feedUrl == 'https://feeds.npr.org/510325/podcast.xml') console.log(result);
     return result;
 }
 
