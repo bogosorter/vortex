@@ -1,10 +1,9 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import Color from 'color';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import TrackPlayer, { State } from 'react-native-track-player';
 import useStore from '../utils/store';
 import { Episode } from '../utils/types';
-import { darkColors } from '../utils/colors';
 
 export default function EpisodePlayButton({ episode }: { episode: Episode }) {
     const play = useStore((state) => state.player.play);
@@ -20,10 +19,10 @@ export default function EpisodePlayButton({ episode }: { episode: Episode }) {
             else play(episode);
         }}>
             <View style={styles.playButton}>
-                <MaterialIcons
-                    name={playing ? 'pause' : 'play-arrow'}
-                    size={30}
-                    color={color}
+                <FontAwesome6
+                    name={playing ? 'pause-circle' : 'play-circle'}
+                    size={148}
+                    color={'rgba(255, 255, 255, 0.8)'}
                 />
             </View>
         </TouchableOpacity>
@@ -32,11 +31,6 @@ export default function EpisodePlayButton({ episode }: { episode: Episode }) {
 
 const styles = StyleSheet.create({
     playButton: {
-        height: 48,
-        width: 48,
-        backgroundColor: darkColors.onSurface,
-        borderRadius: 24,
-        display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
     }

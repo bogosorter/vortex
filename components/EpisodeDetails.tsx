@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View, ScrollView, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Feather from 'react-native-vector-icons/Feather';
 import Color from 'color';
 import DownloadButton from './DownloadButton';
 import HTML from './HTML';
 import EpisodePlayButton from './EpisodePlayButton';
-import SaveEpisodeButton from './SaveEpisodeButton';
 import colors, { darkColors } from '../utils/colors';
 
 import { RootStackParamList } from '../App';
@@ -23,8 +23,10 @@ export default function EpisodeDetails({ route }: Props) {
                     <View style={styles.artworkDarkener}>
                         <LinearGradient
                             colors={['transparent', 'transparent', backgroundColor]}
-                            style={{ flex: 1 }}
-                        />
+                            style={styles.linearGradient}
+                        >
+                            <EpisodePlayButton episode={episode} />
+                        </LinearGradient>
                     </View>
                 </ImageBackground>
                 <View style={styles.headerWrapper}>
@@ -33,12 +35,13 @@ export default function EpisodeDetails({ route }: Props) {
                             <Text style={styles.title}>{episode.title}</Text>
                             <Text style={styles.show}>{episode.showTitle}</Text>
                         </View>
-                        <EpisodePlayButton episode={episode} />
+                        <DownloadButton episode={episode} color={backgroundColor} />
                     </View>
-                    <View style={styles.buttons}>
-                        <DownloadButton episode={episode} />
-                        <SaveEpisodeButton episode={episode} />
-                    </View>
+                    <Feather
+                        name={'more-horizontal'}
+                        color={colors.onSurface}
+                        size={30}
+                    />
                 </View>
                 <View style={styles.descriptionContainer}>
                     <HTML html={episode.description} />
@@ -67,7 +70,7 @@ function getStyles(backgroundColor: string) {
         },
         headerWrapper: {
             minHeight: 150,
-            justifyContent: 'flex-end',
+            justifyContent: 'center',
             padding: 20,
             backgroundColor: backgroundColor,
             borderBottomLeftRadius: 30,
@@ -76,8 +79,8 @@ function getStyles(backgroundColor: string) {
         header: {
             paddingTop: 60,
             paddingBottom: 15,
-            display: 'flex',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            alignItems: 'center'
         },
         headerText: {
             flex: 1,
@@ -98,6 +101,11 @@ function getStyles(backgroundColor: string) {
             flexDirection: 'row',
             justifyContent: 'center',
             gap: 20
+        },
+        linearGradient: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center'
         }
     });
 }

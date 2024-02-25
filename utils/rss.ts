@@ -13,6 +13,7 @@ import { parseDuration } from './utils';
 
 export async function getShow(preview: ShowPreview) {
     const rss = await getRSS(preview.feedUrl);
+    if (rss === -1) return -1;
 
     const title = getFirst(rss, 'title')!;
     const link = getFirst(rss, 'link')!;
@@ -37,6 +38,7 @@ export async function getShow(preview: ShowPreview) {
 
 export async function getEpisodes(show: Show) {
     const rss = await getRSS(show.feedUrl);
+    if (rss === -1) return -1;
     const result = getAll(rss, 'item').map((episode) => parseEpisode(show, episode));
     return result;
 }
@@ -50,7 +52,6 @@ function parseEpisode(show: Show, rss: string) {
     const duration = parseDuration(getFirst(rss, 'itunes:duration')!);
     const guid = title;
     const url = getAttribute(rss, 'enclosure', 'url')!;
-
     return {
         title,
         description,
@@ -109,11 +110,15 @@ function getAttribute(rss: string, tagName: string, attributeName: string) {
 }
 
 async function getRSS(feedUrl: string) {
-    const request = await fetch(feedUrl, {
-        headers: {
-            'user-agent': 'vortex'
-        }
-    });
-    return await request.text();
+    try {
+        const request = await fetch(feedUrl, {
+            headers: {
+                'user-agent': 'vortex'
+            }
+        });
+        return await request.text();
+    } catch {
+        return -1;
+    }
 }
 

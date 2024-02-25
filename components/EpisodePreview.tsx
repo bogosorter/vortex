@@ -1,7 +1,8 @@
 import { StyleSheet, View, Text, TouchableOpacity, ImageBackground } from 'react-native';
+import ContextMenu from 'react-native-context-menu-view';
 import { useNavigation } from '@react-navigation/native';
 import Color from 'color';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import HTML from './HTML';
 import useStore from '../utils/store';
 import { Episode } from '../utils/types';
@@ -25,7 +26,7 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     }
 
     return (
-        <TouchableOpacity onPress={openDetails}>
+        <ContextMenu actions={[{title: 'Download'}]}>
             <View style={styles.preview}>
                 <View style={styles.previewBody}>
                     {showArtwork && (
@@ -36,19 +37,17 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
                                         e.stopPropagation();
                                         play(episode);
                                     }}>
-                                        <View style={styles.roundButton}>
-                                            <MaterialIcons
-                                                name={'play-arrow'}
-                                                size={36}
-                                                color={colors.onSurface}
-                                            />
-                                        </View>
+                                        <FontAwesome5
+                                            name={'play-circle'}
+                                            size={56}
+                                            color={'rgba(255, 255, 255, 0.7)'}
+                                        />
                                     </TouchableOpacity>
                                 </View>
                             </ImageBackground>
                         </View>
                     )}
-                    <View style={styles.text}>
+                    <TouchableOpacity onPress={openDetails} style={styles.text}>
                         <Text style={styles.title} numberOfLines={1}>
                             {episode.title}
                         </Text>
@@ -58,10 +57,10 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
                         <Text style={styles.info}>
                             {duration}m • {date}
                         </Text>
-                    </View>
+                    </TouchableOpacity>
                 </View>
             </View>
-        </TouchableOpacity>
+        </ContextMenu>
     );
 }
 
@@ -104,14 +103,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center'
-    },
-    roundButton: {
-        height: 48,
-        width: 48,
-        borderRadius: 24,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)'
     }
 });

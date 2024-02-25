@@ -10,11 +10,16 @@ import colors from '../utils/colors';
 // Vortex resorts to using the podcast's RSS feed once it has its URL.
 
 export async function searchShow(term: string) {
-    const result =  await fetch('https://itunes.apple.com/search?' + new URLSearchParams({
-        term,
-        limit: '20',
-        media: 'podcast'
-    }));
+    let result;
+    try {
+        result = await fetch('https://itunes.apple.com/search?' + new URLSearchParams({
+            term,
+            limit: '20',
+            media: 'podcast'
+        }));
+    } catch(error) {
+        return -1;
+    }
     const json = await result.json();
     const shows: ShowPreview[] = json.results.map((show: any) => {
         return {

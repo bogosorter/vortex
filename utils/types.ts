@@ -43,4 +43,6 @@ export enum DownloadStatus {
 export type DownloadInfo = {
     status: DownloadStatus;
     id: number;
+    date: number;
+    progress: number;
 };

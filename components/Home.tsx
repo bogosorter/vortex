@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { StyleSheet, TextInput, View, FlatList, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useStore from '../utils/store';
+import { useShallow } from 'zustand/react/shallow';
 import EpisodePreview from './EpisodePreview';
 import Artwork from './Artwork';
 import { statusBarHeight } from '../utils/dimensions';
@@ -14,7 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export default function Home({ navigation }: Props) {
     const [query, setQuery] = useState('');
     const shows = useStore(store => store.library.shows);
-    const feed = useStore(store => store.library.getFeed())
+    const feed = useStore(useShallow(store => store.library.getFeed()))
     const refresh = useStore(store => store.library.refresh);
 
     useMemo(() => refresh(), []);

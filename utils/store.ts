@@ -20,6 +20,7 @@ type Store = {
         saveEpisode: (episode: Episode) => void;
         removeSavedEpisode: (episode: Episode) => void;
         getPlaybackState: (episode: Episode) => PlaybackState;
+        getAll: () => Episode[];
         getFeed: () => Episode[];
         refresh: () => Promise<void>;
         refreshShow: (show: Show) => Promise<void>;
@@ -40,6 +41,8 @@ type Store = {
         getPath: (episode: Episode) => string;
         createPath: (episode: Episode) => string;
         getDownloadedEpisodes: () => Episode[];
+        clean: () => void;
+        clearError: (episode: Episode) => void;
 
         store: () => void;
         load: () => void;
@@ -50,7 +53,7 @@ type Store = {
 
         play: (episode: Episode, start?: boolean) => Promise<void>;
         onEnd: () => Promise<void>;
-        updateState: (state: PlayerState) => void;
+        updateState: (state: PlayerState) => Promise<void>;
 
         store: () => void;
         load: () => void;
@@ -96,19 +99,24 @@ const useStore = create<Store>()(immer((set, get) => ({
         getPlaybackState: (episode) => {
             return get().library.playbackStates[episode.guid] || { position: 0, played: false } as PlaybackState;
         },
-        getFeed: () => {
+        getAll: () => {
             const savedEpisodes = get().library.savedEpisodes;
             const episodesFromShows = get().library.shows.flatMap(show => show.episodes);
             const saved = get().library.saved;
-            const result = savedEpisodes.concat(episodesFromShows.filter(episode => !saved[episode.guid]))
+            const result = savedEpisodes.concat(episodesFromShows.filter(episode => !saved[episode.guid]));
             return result.sort(
                 (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
             );
+        },
+        getFeed: () => {
+            const all = get().library.getAll();
+            return all.filter(episode => !get().library.getPlaybackState(episode).played);
         },
         refresh: async () => {
             const shows = get().library.shows;
             const result = await Promise.all(shows.map(async (show) => {
                 const episodes = await getEpisodes(show);
+                if (episodes === -1) return show;
                 return { ...show, episodes };
             }));
 
@@ -118,10 +126,13 @@ const useStore = create<Store>()(immer((set, get) => ({
             get().library.storeShows();
         },
         refreshShow: async (show) => {
-            const index = get().library.shows.findIndex(s => s.feedUrl === show.feedUrl)
-            if (index == undefined) return;
+            const index = get().library.shows.findIndex(s => s.feedUrl === show.feedUrl);
+            // Don't refresh shows that don't belong to the user's subscriptions
+            if (index == -1) return;
 
             const episodes = await getEpisodes(show);
+            if (episodes === -1) return;
+
             set(state => {
                 const index = state.library.shows.findIndex(s => s.feedUrl === show.feedUrl);
                 state.library.shows[index].episodes = episodes;
@@ -173,6 +184,7 @@ const useStore = create<Store>()(immer((set, get) => ({
 
         add: async (episode) => {
             const downloadInfo = get().downloads.getInfo(episode);
+            if (downloadInfo.status === DownloadStatus.DOWNLOADED) return;
             downloadInfo.status = DownloadStatus.DOWNLOADING;
             set(state => {
                 state.downloads.downloadInfo[episode.guid] = downloadInfo;
@@ -180,23 +192,41 @@ const useStore = create<Store>()(immer((set, get) => ({
 
             await RNFS.mkdir(downloadDirectory);
             const path = get().downloads.createPath(episode);
-            console.log(path);
             const download = RNFS.downloadFile({
                 fromUrl: episode.url,
                 toFile: path,
                 headers: {
                     'user-agent': 'vortex'
+                },
+                progressInterval: 200,
+                progress: (e) => {
+                    const p = e.bytesWritten / e.contentLength;
+                    set(state => state.downloads.downloadInfo[episode.guid].progress = p)
                 }
             });
-            
-            const result = await download.promise;
-            const status = result.statusCode === 200 ? DownloadStatus.DOWNLOADED : DownloadStatus.ERROR;
-            set(state => {
-                state.downloads.downloadInfo[episode.guid].status = status;
-            })
+
+            try {
+                const result = await download.promise;
+                if (result.statusCode === 200) {
+                    set(state => {
+                        state.downloads.downloadInfo[episode.guid].status = DownloadStatus.DOWNLOADED;
+                        state.downloads.downloadInfo[episode.guid].date = Date.now();
+                    })
+                } else {
+                    set(state => {
+                        state.downloads.downloadInfo[episode.guid].status = DownloadStatus.ERROR;
+                    })
+                }
+            } catch(_) {
+                set(state => {
+                    state.downloads.downloadInfo[episode.guid].status = DownloadStatus.ERROR;
+                })
+            }
             get().downloads.store();
         },
         remove: async (episode) => {
+            const downloadInfo = get().downloads.getInfo(episode);
+            if (downloadInfo.status != DownloadStatus.DOWNLOADED) return;
             const path = get().downloads.getPath(episode);
             await RNFS.unlink(path);
             set(state => {
@@ -207,7 +237,7 @@ const useStore = create<Store>()(immer((set, get) => ({
         getInfo: (episode) => {
             const info = get().downloads.downloadInfo[episode.guid];
             if (info) return info;
-            return { status: DownloadStatus.NOT_DOWNLOADED, id: -1 } as DownloadInfo;
+            return { status: DownloadStatus.NOT_DOWNLOADED, id: -1, date: -1, progress: 0 } as DownloadInfo;
         },
         getPath: (episode) => {
             const downloadInfo = get().downloads.getInfo(episode);
@@ -219,7 +249,6 @@ const useStore = create<Store>()(immer((set, get) => ({
             if (downloadInfo.id !== -1) return downloadDirectory + `/${downloadInfo.id}.mp3`;
             const id = Number(storage.getString('downloadId') || '-1') + 1;
             storage.set('downloadId', String(id));
-            console.log(id);
             set(state => {
                 state.downloads.downloadInfo[episode.guid] = {...downloadInfo, id};
             });
@@ -228,11 +257,24 @@ const useStore = create<Store>()(immer((set, get) => ({
         },
         getDownloadedEpisodes: () => {
             const result = [];
-            for (const episode of get().library.getFeed()) {
+            for (const episode of get().library.getAll()) {
                 const info = get().downloads.getInfo(episode);
                 if (info.status === DownloadStatus.DOWNLOADED) result.push(episode);
             }
             return result;
+        },
+        clean: () => {
+            for (const episode of get().downloads.getDownloadedEpisodes()) {
+                const downloadInfo = get().downloads.getInfo(episode);
+                const downloadAge = Date.now() - downloadInfo.date;
+                // Remove downloads after two weeks
+                if (downloadAge > 2 * 7 * 24 * 60 * 60 * 1000) get().downloads.remove(episode);
+            }
+        },
+        clearError: (episode) => {
+            set(state => {
+                state.downloads.downloadInfo[episode.guid].status = DownloadStatus.NOT_DOWNLOADED
+            });
         },
 
         store: () => {
@@ -254,6 +296,11 @@ const useStore = create<Store>()(immer((set, get) => ({
             set(state => {
                 state.player.currentEpisode = episode;
             });
+
+            // The position has to be retrieved before the track player is
+            // initialized because the initialization process may change its value
+            const position = get().library.getPlaybackState(episode).position;
+
             await TrackPlayer.reset();
             await TrackPlayer.add({
                 title: episode.title,
@@ -261,11 +308,11 @@ const useStore = create<Store>()(immer((set, get) => ({
                 url: get().downloads.getPath(episode),
                 artwork: episode.artwork,
                 duration: episode.duration,
-                userAgent: 'vortex'
+                userAgent: 'vortex',
             });
-            const playbackState = get().library.getPlaybackState(episode);
-            await TrackPlayer.seekTo(playbackState.position);
+            await TrackPlayer.seekTo(position);
             if (start) await TrackPlayer.play();
+
             get().player.store();
         },
         onEnd: async () => {
@@ -281,10 +328,26 @@ const useStore = create<Store>()(immer((set, get) => ({
             await TrackPlayer.reset();
             get().library.storePlaybackStates();
         },
-        updateState: (playerState) => {
+        updateState: async (playerState) => {
             set(state => {
                 state.player.state = playerState;
             });
+
+            const episode = get().player.currentEpisode;
+            if (episode) {
+                const playbackState = get().library.getPlaybackState(episode);
+                const progress = await TrackPlayer.getProgress();
+                set(state => {
+                    state.library.playbackStates[episode.guid] = {
+                        ...playbackState,
+                        position: progress.position,
+                        // An episode is complete when there is less than 5% of
+                        // it left (usually for credits, etc.)
+                        played: progress.position / progress.duration > 0.95
+                    };
+                });
+                get().library.storePlaybackStates();
+            }
         },
 
         store: () => {
@@ -304,6 +367,7 @@ useStore.getState().library.loadShows();
 useStore.getState().library.loadSavedEpisodes();
 useStore.getState().library.loadPlaybackStates();
 useStore.getState().downloads.load();
+useStore.getState().downloads.clean();
 (async () => {
     await setupPlayer();
     useStore.getState().player.load();
