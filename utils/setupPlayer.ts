@@ -18,5 +18,6 @@ export default async function setupPlayer() {
             Capability.Pause,
             Capability.JumpForward
         ],
+        progressUpdateEventInterval: 5
     });
 }

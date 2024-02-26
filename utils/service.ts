@@ -9,4 +9,5 @@ export default async function PlaybackService() {
     TrackPlayer.addEventListener(Event.RemoteJumpForward, () => TrackPlayer.seekBy(30));
     TrackPlayer.addEventListener(Event.RemoteJumpBackward, () => TrackPlayer.seekBy(-10));
     TrackPlayer.addEventListener(Event.PlaybackState, ({ state }) => useStore.getState().player.updateState(state));
+    TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, ({position}) => useStore.getState().player.updateProgress(position));
 }

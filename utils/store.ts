@@ -50,10 +50,15 @@ type Store = {
     player: {
         currentEpisode: Episode | null;
         state: PlayerState;
+        queue: Episode[];
 
         play: (episode: Episode, start?: boolean) => Promise<void>;
         onEnd: () => Promise<void>;
-        updateState: (state: PlayerState) => Promise<void>;
+        updateState: (state: PlayerState) => void;
+        updateProgress: (progress: number) => void;
+        playNext: (episode: Episode) => void;
+        playLater: (episode: Episode) => void;
+        reorder: (from: number, to: number) => void;
 
         store: () => void;
         load: () => void;
@@ -61,7 +66,7 @@ type Store = {
 };
 
 const storage = new MMKV();
-const downloadDirectory = RNFS.DownloadDirectoryPath + '/vortex';
+const downloadDirectory = RNFS.DocumentDirectoryPath + '/vortex';
 
 const useStore = create<Store>()(immer((set, get) => ({
     library: {
@@ -201,7 +206,9 @@ const useStore = create<Store>()(immer((set, get) => ({
                 progressInterval: 200,
                 progress: (e) => {
                     const p = e.bytesWritten / e.contentLength;
-                    set(state => state.downloads.downloadInfo[episode.guid].progress = p)
+                    set(state => {
+                        state.downloads.downloadInfo[episode.guid].progress = p
+                    });
                 }
             });
 
@@ -328,26 +335,23 @@ const useStore = create<Store>()(immer((set, get) => ({
             await TrackPlayer.reset();
             get().library.storePlaybackStates();
         },
-        updateState: async (playerState) => {
+        updateState: (playerState) => {
             set(state => {
                 state.player.state = playerState;
             });
-
+        },
+        updateProgress: (progress) => {
             const episode = get().player.currentEpisode;
-            if (episode) {
-                const playbackState = get().library.getPlaybackState(episode);
-                const progress = await TrackPlayer.getProgress();
-                set(state => {
-                    state.library.playbackStates[episode.guid] = {
-                        ...playbackState,
-                        position: progress.position,
-                        // An episode is complete when there is less than 5% of
-                        // it left (usually for credits, etc.)
-                        played: progress.position / progress.duration > 0.95
-                    };
-                });
-                get().library.storePlaybackStates();
-            }
+            if (!episode) return;
+            
+            const playbackState = get().library.getPlaybackState(episode);
+            set(state => {
+                state.library.playbackStates[episode.guid] = {
+                    ...playbackState,
+                    position: progress
+                };
+            });
+            get().library.storePlaybackStates();
         },
 
         store: () => {
