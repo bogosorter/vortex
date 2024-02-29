@@ -32,7 +32,7 @@ export async function getShow(preview: ShowPreview) {
         feedUrl: preview.feedUrl
     } as Show;
     show.episodes = episodes.map((episode) => parseEpisode(show, episode));
-
+    show.episodes.sort((a, b) => b.date - a.date);
     return show;
 }
 
@@ -40,7 +40,7 @@ export async function getEpisodes(show: Show) {
     const rss = await getRSS(show.feedUrl);
     if (rss === -1) return -1;
     const result = getAll(rss, 'item').map((episode) => parseEpisode(show, episode));
-    return result;
+    return result.sort((a, b) => b.date - a.date);
 }
 
 function parseEpisode(show: Show, rss: string) {
@@ -52,6 +52,7 @@ function parseEpisode(show: Show, rss: string) {
     const duration = parseDuration(getFirst(rss, 'itunes:duration')!);
     const guid = title;
     const url = getAttribute(rss, 'enclosure', 'url')!;
+    
     return {
         title,
         description,
@@ -75,7 +76,7 @@ function getFirst(rss: string, tagName: string) {
     startIndex = rss.indexOf('>', startIndex) + 1;
     const endIndex = rss.indexOf(tagEnd);
 
-    return rss.substring(startIndex, endIndex);
+    return rss.substring(startIndex, endIndex).trim();
 }
 
 function getAll(rss: string, tagName: string) {
@@ -90,7 +91,7 @@ function getAll(rss: string, tagName: string) {
         if (startIndex === -1) break;
         startIndex = rss.indexOf('>', startIndex);
         const endIndex = rss.indexOf(tagEnd, currentIndex) + 1;
-        tags.push(rss.substring(startIndex, endIndex));
+        tags.push(rss.substring(startIndex, endIndex).trim());
         currentIndex = endIndex + tagEnd.length;
     }
 
@@ -106,7 +107,7 @@ function getAttribute(rss: string, tagName: string, attributeName: string) {
     startIndex = rss.indexOf(attributeStart, startIndex) + attributeStart.length;
     const endIndex = rss.indexOf('"', startIndex + attributeStart.length);
 
-    return rss.substring(startIndex, endIndex);
+    return rss.substring(startIndex, endIndex).trim();
 }
 
 async function getRSS(feedUrl: string) {

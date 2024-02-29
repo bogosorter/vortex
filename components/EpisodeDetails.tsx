@@ -55,6 +55,9 @@ export default function EpisodeDetails({ route }: Props) {
                             a: {
                                 color: colors.primary,
                                 fontWeight: 'bold'
+                            },
+                            p: {
+                                textAlign: 'justify'
                             }
                         }}
                     />

@@ -9,7 +9,7 @@ export default function PlayerButton({color, backgroundColor}: {color: string, b
     const onEnd = useStore(state => state.player.onEnd);
     const styles = getStyles(backgroundColor);
     
-    if (playerState === State.Playing) return (
+    if (playerState === State.Playing || playerState == State.Buffering) return (
         <TouchableOpacity onPress={(e) => {
             e.stopPropagation();
             TrackPlayer.pause();
@@ -39,6 +39,8 @@ export default function PlayerButton({color, backgroundColor}: {color: string, b
             </View>
         </TouchableOpacity>
     );
+
+    // State == loading (or other states that should never happen at this point...)
     return (
         <View style={styles.button}>
             <CircleSnail color={color} size={35} />
