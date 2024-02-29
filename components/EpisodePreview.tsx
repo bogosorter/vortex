@@ -1,9 +1,9 @@
-import { StyleSheet, View, Text, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, useWindowDimensions } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
 import { useNavigation } from '@react-navigation/native';
 import Color from 'color';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import HTML from './HTML';
+import RenderHTML from 'react-native-render-html';
 import useStore from '../utils/store';
 import { Episode } from '../utils/types';
 import colors from '../utils/colors';
@@ -15,6 +15,8 @@ type Props = {
 
 export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     const play = useStore(state => state.player.play);
+    const playLater = useStore(state => state.player.playLater);
+    const width = useWindowDimensions().width;
 
     const duration = Math.round(episode.duration / 60);
     const date = new Date(episode.date).toLocaleDateString();
@@ -26,7 +28,9 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     }
 
     return (
-        <ContextMenu actions={[{title: 'Download'}]}>
+        <ContextMenu actions={[{title: 'Download'}, {title: 'Play Later'}]} onPress={() => {
+            playLater(episode);
+        }}>
             <View style={styles.preview}>
                 <View style={styles.previewBody}>
                     {showArtwork && (
@@ -51,9 +55,20 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
                         <Text style={styles.title} numberOfLines={1}>
                             {episode.title}
                         </Text>
-                        <Text style={styles.description} numberOfLines={2}>
-                            <HTML html={episode.description} />
-                        </Text>
+                        <View style={styles.htmlContainer}>
+                            <RenderHTML
+                                source={{ html: episode.shortDescription }}
+                                contentWidth={width}
+                                defaultTextProps={{
+                                    numberOfLines: 2
+                                }}
+                                tagsStyles={{
+                                    p: {
+                                        textAlign: 'justify'
+                                    }
+                                }}
+                            />
+                        </View>
                         <Text style={styles.info}>
                             {duration}m • {date}
                         </Text>
@@ -91,10 +106,8 @@ const styles = StyleSheet.create({
         color: colors.onSurface,
         fontWeight: 'bold'
     },
-    description: {
-        fontSize: 14,
-        color: new Color(colors.onSurface).alpha(0.8).string(),
-        textAlign: 'justify'
+    htmlContainer: {
+        height: 40
     },
     info: {
         fontSize: 14,

@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View, ScrollView, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, ImageBackground, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from 'react-native-vector-icons/Feather';
 import Color from 'color';
 import DownloadButton from './DownloadButton';
-import HTML from './HTML';
+import RenderHTML from 'react-native-render-html';
 import EpisodePlayButton from './EpisodePlayButton';
 import colors, { darkColors } from '../utils/colors';
 
@@ -12,6 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 type Props = NativeStackScreenProps<RootStackParamList, 'EpisodeDetails'>;
 
 export default function EpisodeDetails({ route }: Props) {
+    const width = useWindowDimensions().width;
     const episode = route.params.episode;
     const backgroundColor = new Color(episode.color).darken(0.5).hex();
     const styles = getStyles(backgroundColor);
@@ -44,7 +45,19 @@ export default function EpisodeDetails({ route }: Props) {
                     />
                 </View>
                 <View style={styles.descriptionContainer}>
-                    <HTML html={episode.description} />
+                    <RenderHTML
+                        source={{ html: episode.description }}
+                        contentWidth={width}
+                        baseStyle={{
+                            color: colors.onSurface
+                        }}
+                        tagsStyles={{
+                            a: {
+                                color: colors.primary,
+                                fontWeight: 'bold'
+                            }
+                        }}
+                    />
                 </View>
             </ScrollView>
         </View>
