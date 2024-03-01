@@ -11,7 +11,7 @@ type Store = {
     library: {
         shows: Show[];
         savedEpisodes: Episode[];
-        // Ensures that checking wether an episode is saved is fast
+        // Ensures that checking whether an episode is saved is fast
         saved: { [key: string]: boolean };
         playbackStates: { [key: string]: PlaybackState };
 
@@ -88,6 +88,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             get().library.storeShows();
         },
         saveEpisode: (episode) => {
+            if (get().library.saved[episode.guid]) return;
             set(state => {
                 state.library.savedEpisodes.push(episode);
                 state.library.saved[episode.guid] = true;
@@ -109,9 +110,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             const episodesFromShows = get().library.shows.flatMap(show => show.episodes);
             const saved = get().library.saved;
             const result = savedEpisodes.concat(episodesFromShows.filter(episode => !saved[episode.guid]));
-            return result.sort(
-                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
+            return result.sort((a, b) => b.date - a.date);
         },
         getFeed: () => {
             const all = get().library.getAll();
@@ -220,11 +219,13 @@ const useStore = create<Store>()(immer((set, get) => ({
                         state.downloads.downloadInfo[episode.guid].date = Date.now();
                     })
                 } else {
+                    console.log('error 1');
                     set(state => {
                         state.downloads.downloadInfo[episode.guid].status = DownloadStatus.ERROR;
                     })
                 }
             } catch(_) {
+                console.log('error 2', _);
                 set(state => {
                     state.downloads.downloadInfo[episode.guid].status = DownloadStatus.ERROR;
                 })
@@ -298,8 +299,10 @@ const useStore = create<Store>()(immer((set, get) => ({
     player: {
         currentEpisode: null as Episode | null,
         state: PlayerState.None as PlayerState,
+        queue: [] as Episode[],
 
         play: async (episode, start = true) => {
+            console.log('got here 2', episode);
             set(state => {
                 state.player.currentEpisode = episode;
             });
@@ -324,16 +327,20 @@ const useStore = create<Store>()(immer((set, get) => ({
         },
         onEnd: async () => {
             const episode = get().player.currentEpisode!;
-            const playbackState = get().library.getPlaybackState(episode);
-            playbackState.played = true;
-            playbackState.position = 0;
             set(state => {
-                state.library.playbackStates[episode.guid] = playbackState;
+                state.library.playbackStates[episode.guid].position = 0;
                 state.player.currentEpisode = null;
             });
-            await TrackPlayer.stop();
-            await TrackPlayer.reset();
-            get().library.storePlaybackStates();
+
+            const queue = get().player.queue;
+            if (queue.length) {
+                const next = queue[0];
+                set(state => {
+                    state.player.queue.shift();
+                });
+                get().player.play(next);
+            }
+            else await TrackPlayer.reset();
         },
         updateState: (playerState) => {
             set(state => {
@@ -352,6 +359,22 @@ const useStore = create<Store>()(immer((set, get) => ({
                 };
             });
             get().library.storePlaybackStates();
+        },
+        playNext: (episode) => {
+            set(state => {
+                state.player.queue.unshift(episode);
+            });
+        },
+        playLater: (episode) => {
+            set(state => {
+                state.player.queue.push(episode);
+            });
+        },
+        reorder: (from, to) => {
+            set(state => {
+                const episodes = state.player.queue.splice(from, 1);
+                state.player.queue.splice(to, 0, ...episodes);
+            });
         },
 
         store: () => {

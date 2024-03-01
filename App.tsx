@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { setBackgroundColorAsync, setPositionAsync, setButtonStyleAsync } from 'expo-navigation-bar';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import Home from './components/Home';
 import Search from './components/Search';
 import ShowDetails from './components/ShowDetails';
@@ -27,62 +28,64 @@ export default function App() {
     const barStyle = Appearance.getColorScheme() === 'dark' ? 'light-content' : 'dark-content';
     return (
         <GestureHandlerRootView style={styles.app}>
-            <NavigationContainer>
-                <StatusBar barStyle={barStyle} backgroundColor='transparent' translucent />
-                <Stack.Navigator initialRouteName='Home'>
-                    <Stack.Screen
-                        name='Home'
-                        component={Home}
-                        options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                        name='Search'
-                        component={Search}
-                        options={({ route }) => ({
-                            title: route.params.query,
-                            headerStyle: { backgroundColor: colors.surface },
-                            headerTintColor: colors.onSurface,
-                        })}
-                    />
-                    <Stack.Screen
-                        name='ShowDetails'
-                        component={ShowDetails}
-                        options={{
-                            headerTransparent: true,
-                            headerTintColor: darkColors.onSurface,
-                            title: ''
-                        }}
-                    />
-                    <Stack.Screen
-                        name='EpisodeDetails'
-                        component={EpisodeDetails}
-                        options={{
-                            headerTransparent: true,
-                            headerTintColor: darkColors.onSurface,
-                            title: ''
-                        }}
-                    />
-                    <Stack.Screen
-                        name='DownloadedEpisodes'
-                        component={DownloadedEpisodes}
-                        options={{
-                            title: 'Downloaded Episodes',
-                            headerStyle: { backgroundColor: colors.surface },
-                            headerTintColor: colors.onSurface,
-                        }}
-                    />
-                    <Stack.Screen
-                        name='SavedEpisodes'
-                        component={SavedEpisodes}
-                        options={{
-                            title: 'Saved Episodes',
-                            headerStyle: { backgroundColor: colors.surface },
-                            headerTintColor: colors.onSurface,
-                        }}
-                    />
-                </Stack.Navigator>
-                <Player />
-            </NavigationContainer>
+            <ActionSheetProvider>
+                <NavigationContainer>
+                    <StatusBar barStyle={barStyle} backgroundColor='transparent' translucent />
+                    <Stack.Navigator initialRouteName='Home'>
+                        <Stack.Screen
+                            name='Home'
+                            component={Home}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name='Search'
+                            component={Search}
+                            options={({ route }) => ({
+                                title: route.params.query,
+                                headerStyle: { backgroundColor: colors.surface },
+                                headerTintColor: colors.onSurface,
+                            })}
+                        />
+                        <Stack.Screen
+                            name='ShowDetails'
+                            component={ShowDetails}
+                            options={{
+                                headerTransparent: true,
+                                headerTintColor: darkColors.onSurface,
+                                title: ''
+                            }}
+                        />
+                        <Stack.Screen
+                            name='EpisodeDetails'
+                            component={EpisodeDetails}
+                            options={{
+                                headerTransparent: true,
+                                headerTintColor: darkColors.onSurface,
+                                title: ''
+                            }}
+                        />
+                        <Stack.Screen
+                            name='DownloadedEpisodes'
+                            component={DownloadedEpisodes}
+                            options={{
+                                title: 'Downloaded Episodes',
+                                headerStyle: { backgroundColor: colors.surface },
+                                headerTintColor: colors.onSurface,
+                            }}
+                        />
+                        <Stack.Screen
+                            name='SavedEpisodes'
+                            component={SavedEpisodes}
+                            options={{
+                                title: 'Saved Episodes',
+                                headerStyle: { backgroundColor: colors.surface },
+                                headerTintColor: colors.onSurface,
+                            }}
+                        />
+                    </Stack.Navigator>
+                    <Player />
+                </NavigationContainer>
+            </ActionSheetProvider>
         </GestureHandlerRootView>
     );
 }

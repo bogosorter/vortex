@@ -12,7 +12,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 type Props = NativeStackScreenProps<RootStackParamList, 'ShowDetails'>;
 
 export default function ShowDetails({route}: Props) {
-    const refresh = useStore(store => store.library.refreshShow)
+    const refresh = useStore(store => store.library.refreshShow);
+
     const show = route.params.show;
     const backgroundColor = new Color(show.color).darken(0.5).string();
     const styles = getStyles(backgroundColor);

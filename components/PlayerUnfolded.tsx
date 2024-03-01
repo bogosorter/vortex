@@ -5,10 +5,12 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Color from 'color';
 import useStore from '../utils/store';
 import PlayerButton from './PlayerButton';
+import EpisodePreview from './EpisodePreview';
 import { darkColors } from '../utils/colors';
 
 export default function PlayerUnfolded() {
     const episode = useStore(state => state.player.currentEpisode)!;
+    const queue = useStore(state => state.player.queue);
     const backgroundColor = new Color(episode.color).darken(0.5).string();
     const buttonColor = new Color(darkColors.onSurface).alpha(0.8).string();
     const position = useProgress().position;
@@ -40,6 +42,7 @@ export default function PlayerUnfolded() {
                     <MaterialIcons name={'forward-30'} size={40} color={buttonColor} />
                 </TouchableOpacity>
             </View>
+            {queue.map((episode, index) => <EpisodePreview episode={episode} key={index} />)}
         </View>
     )
 }

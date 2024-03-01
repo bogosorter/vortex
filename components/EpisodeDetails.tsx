@@ -1,21 +1,45 @@
-import { StyleSheet, Text, View, ScrollView, ImageBackground, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, ImageBackground, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 import Feather from 'react-native-vector-icons/Feather';
 import Color from 'color';
 import DownloadButton from './DownloadButton';
 import RenderHTML from 'react-native-render-html';
 import EpisodePlayButton from './EpisodePlayButton';
+import useStore from '../utils/store';
 import colors, { darkColors } from '../utils/colors';
+import { navigationBarHeight } from '../utils/dimensions';
 
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 type Props = NativeStackScreenProps<RootStackParamList, 'EpisodeDetails'>;
 
 export default function EpisodeDetails({ route }: Props) {
+    const play = useStore(state => state.player.play);
+    const playLater = useStore(state => state.player.playLater);
+    const download = useStore(state => state.downloads.add);
     const width = useWindowDimensions().width;
+    const { showActionSheetWithOptions } = useActionSheet();
+
     const episode = route.params.episode;
     const backgroundColor = new Color(episode.color).darken(0.5).hex();
     const styles = getStyles(backgroundColor);
+
+    function showMenu() {
+        showActionSheetWithOptions(
+            {
+                options: ['Play', 'Play Later', 'Download'],
+                cancelButtonIndex: 2,
+                containerStyle: styles.menuContainer,
+                textStyle: styles.menuItem
+            },
+            buttonIndex => {
+                if (buttonIndex === 0) play(episode);
+                else if (buttonIndex === 1) playLater(episode);
+                else if (buttonIndex === 2) download(episode);
+            }
+        );
+    }
 
     return (
         <View style={styles.episodeDetails}>
@@ -38,11 +62,13 @@ export default function EpisodeDetails({ route }: Props) {
                         </View>
                         <DownloadButton episode={episode} color={backgroundColor} />
                     </View>
-                    <Feather
-                        name={'more-horizontal'}
-                        color={colors.onSurface}
-                        size={30}
-                    />
+                    <TouchableOpacity onPress={showMenu}>
+                        <Feather
+                            name={'more-horizontal'}
+                            color={colors.onSurface}
+                            size={30}
+                        />
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.descriptionContainer}>
                     <RenderHTML
@@ -122,6 +148,16 @@ function getStyles(backgroundColor: string) {
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center'
+        },
+        menuContainer: {
+            backgroundColor: colors.surface,
+            padding: 10,
+            paddingBottom: navigationBarHeight,
+            borderTopLeftRadius: 30,
+            borderTopRightRadius: 30
+        },
+        menuItem: {
+            color: colors.onSurface
         }
     });
 }

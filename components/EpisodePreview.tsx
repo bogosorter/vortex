@@ -1,10 +1,11 @@
 import { StyleSheet, View, Text, TouchableOpacity, ImageBackground, useWindowDimensions } from 'react-native';
-import ContextMenu from 'react-native-context-menu-view';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 import { useNavigation } from '@react-navigation/native';
 import Color from 'color';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import RenderHTML from 'react-native-render-html';
 import useStore from '../utils/store';
+import { navigationBarHeight } from '../utils/dimensions';
 import { Episode } from '../utils/types';
 import colors from '../utils/colors';
 
@@ -16,7 +17,9 @@ type Props = {
 export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     const play = useStore(state => state.player.play);
     const playLater = useStore(state => state.player.playLater);
+    const download = useStore(state => state.downloads.add);
     const width = useWindowDimensions().width;
+    const { showActionSheetWithOptions } = useActionSheet();
 
     const duration = Math.round(episode.duration / 60);
     const date = new Date(episode.date).toLocaleDateString();
@@ -24,46 +27,60 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     const navigation = useNavigation();
     function openDetails() {
         // @ts-ignore
-        return navigation.navigate('EpisodeDetails', { episode });
+        navigation.navigate('EpisodeDetails', { episode });
+    }
+
+    function showMenu() {
+        showActionSheetWithOptions(
+            {
+                options: ['Play', 'Play Later', 'Download'],
+                cancelButtonIndex: 2,
+                containerStyle: styles.menuContainer,
+                textStyle: styles.menuItem
+            },
+            buttonIndex => {
+                if (buttonIndex === 0) play(episode);
+                else if (buttonIndex === 1) playLater(episode);
+                else if (buttonIndex === 2) download(episode);
+            }
+        );
     }
 
     return (
-        <ContextMenu actions={[{title: 'Download'}, {title: 'Play Later'}]} onPress={() => {
-            playLater(episode);
-        }}>
-            <View style={styles.preview}>
-                <View style={styles.previewBody}>
-                    {showArtwork && (
-                        <View style={styles.artworkContainer}>
-                            <ImageBackground style={styles.artwork} src={episode.artwork}>
-                                <View style={styles.buttonContainer}>
-                                    <TouchableOpacity onPress={(e) => {
-                                        e.stopPropagation();
-                                        play(episode);
-                                    }}>
-                                        <FontAwesome5
-                                            name={'play-circle'}
-                                            size={56}
-                                            color={'rgba(255, 255, 255, 0.7)'}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                            </ImageBackground>
-                        </View>
-                    )}
-                    <TouchableOpacity onPress={openDetails} style={styles.text}>
+        <View style={styles.preview}>
+            <View style={styles.previewBody}>
+                {showArtwork && (
+                    <View style={styles.artworkContainer}>
+                        <ImageBackground style={styles.artwork} src={episode.artwork}>
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity onPress={(e) => {
+                                    e.stopPropagation();
+                                    play(episode);
+                                }}>
+                                    <FontAwesome5
+                                        name={'play-circle'}
+                                        size={56}
+                                        color={'rgba(255, 255, 255, 0.7)'}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </ImageBackground>
+                    </View>
+                )}
+                    <TouchableOpacity onPress={openDetails} style={styles.text} onLongPress={showMenu}>
                         <Text style={styles.title} numberOfLines={1}>
                             {episode.title}
                         </Text>
                         <View style={styles.htmlContainer}>
                             <RenderHTML
                                 source={{ html: episode.shortDescription }}
-                                contentWidth={width}
+                                contentWidth={width - 100}
                                 defaultTextProps={{
                                     numberOfLines: 2
                                 }}
                                 tagsStyles={{
                                     p: {
+                                        marginTop: 0,
                                         textAlign: 'justify'
                                     }
                                 }}
@@ -73,9 +90,8 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
                             {duration}m • {date}
                         </Text>
                     </TouchableOpacity>
-                </View>
             </View>
-        </ContextMenu>
+        </View>
     );
 }
 
@@ -107,7 +123,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     htmlContainer: {
-        height: 40
+        height: 36,
+        overflow: 'hidden'
     },
     info: {
         fontSize: 14,
@@ -118,5 +135,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.7)'
+    },
+    menuContainer: {
+        backgroundColor: colors.surface,
+        padding: 10,
+        paddingBottom: navigationBarHeight,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30
+    },
+    menuItem: {
+        color: colors.onSurface
     }
 });
