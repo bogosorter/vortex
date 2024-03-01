@@ -18,6 +18,7 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     const play = useStore(state => state.player.play);
     const playLater = useStore(state => state.player.playLater);
     const download = useStore(state => state.downloads.add);
+    const save = useStore(state => state.library.saveEpisode);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
 
@@ -33,7 +34,7 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     function showMenu() {
         showActionSheetWithOptions(
             {
-                options: ['Play', 'Play Later', 'Download'],
+                options: ['Play', 'Play Later', 'Download', 'Save'],
                 cancelButtonIndex: 2,
                 containerStyle: styles.menuContainer,
                 textStyle: styles.menuItem
@@ -42,6 +43,7 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
                 if (buttonIndex === 0) play(episode);
                 else if (buttonIndex === 1) playLater(episode);
                 else if (buttonIndex === 2) download(episode);
+                else if (buttonIndex === 3) save(episode);
             }
         );
     }
