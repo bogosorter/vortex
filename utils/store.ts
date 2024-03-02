@@ -92,6 +92,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             if (get().library.saved[episode.guid]) return;
             set(state => {
                 state.library.savedEpisodes.push(episode);
+                state.library.savedEpisodes.sort((a, b) => b.date - a.date);
                 state.library.saved[episode.guid] = true;
             });
             get().library.storeSavedEpisodes();

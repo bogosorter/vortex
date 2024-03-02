@@ -1,20 +1,32 @@
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
 import TrackPlayer, { useProgress } from 'react-native-track-player';
 import { Slider } from '@miblanchard/react-native-slider';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Color from 'color';
 import useStore from '../utils/store';
 import PlayerButton from './PlayerButton';
-import EpisodePreview from './EpisodePreview';
 import { darkColors } from '../utils/colors';
 
 export default function PlayerUnfolded() {
     const episode = useStore(state => state.player.currentEpisode)!;
+    const [position, setPosition] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [progress, setProgress] = useState(0);
+    const seeking = useRef(false);
     const backgroundColor = new Color(episode.color).darken(0.5).string();
     const buttonColor = new Color(darkColors.onSurface).alpha(0.8).string();
-    const position = useProgress(100).position;
-    const duration = useProgress().duration;
-    const progress = position / duration;
+
+    useEffect(() => {
+        const id = setInterval(async () => {
+            if (seeking.current) return;
+            const progress = await TrackPlayer.getProgress();
+            setPosition(progress.position); 
+            setDuration(progress.duration);
+            setProgress(progress.position / progress.duration);
+        }, 100);
+        return () => clearInterval(id);
+    }, []);
 
     return (
         <View style={styles.playerUnfolded}>
@@ -26,7 +38,15 @@ export default function PlayerUnfolded() {
                 minimumTrackTintColor={darkColors.onSurface}
                 maximumTrackTintColor={new Color(darkColors.onSurface).alpha(0.5).toString()}
                 thumbTintColor={darkColors.onSurface}
-                onValueChange={(value) => TrackPlayer.seekTo(value[0] * episode.duration)}
+                onSlidingStart={() => seeking.current = true}
+                onValueChange={(values) => {
+                    setPosition(values[0] * duration);
+                    setProgress(values[0]);
+                }}
+                onSlidingComplete={(values) => {
+                    TrackPlayer.seekTo(values[0] * duration);
+                    seeking.current = false;
+                }}
             />
             <View style={styles.timeContainer}>
                 <Text style={styles.time}>{formatTime(position)}</Text>
