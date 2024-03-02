@@ -30,7 +30,7 @@ export default function PlayerUnfolded() {
             />
             <View style={styles.timeContainer}>
                 <Text style={styles.time}>{formatTime(position)}</Text>
-                <Text style={styles.time}>{formatTime(episode.duration)}</Text>
+                <Text style={styles.time}>{formatTime(duration)}</Text>
             </View>
             <View style={styles.controlButtons}>
                 <TouchableOpacity style={styles.buttonWrapper} onPress={() => TrackPlayer.seekBy(-10)}>
