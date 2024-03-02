@@ -304,11 +304,7 @@ const useStore = create<Store>()(immer((set, get) => ({
         play: async (episode, start = true) => {
             set(state => {
                 state.player.currentEpisode = episode;
-            });
-
-            // The position has to be retrieved before the track player is
-            // initialized because the initialization process may change its value
-            const position = get().library.getPlaybackState(episode).position;
+            });            
 
             await TrackPlayer.reset();
             await TrackPlayer.add({
@@ -319,7 +315,9 @@ const useStore = create<Store>()(immer((set, get) => ({
                 duration: episode.duration,
                 userAgent: 'vortex',
             });
-            await TrackPlayer.seekTo(position);
+            const position = get().library.getPlaybackState(episode).position;
+            // If the episode is completely played, start from the beginning
+            await TrackPlayer.seekTo(episode.duration - position > 5? position : 0);
             if (start) await TrackPlayer.play();
 
             get().player.store();
