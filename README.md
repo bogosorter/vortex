@@ -12,8 +12,9 @@ Android podcast player
 - No UI for episode unsaving
 - Fix RSS parsing (for example, TAL tags are not correctly parsed)
 - Add an "empty" message to home, queue, saved, downloaded and search screens
+- Add a splash screen
 
-- Website and decent logo ;)
+- Website ;)
 
 ### v1.1.0
 - Implement auto-downloads
