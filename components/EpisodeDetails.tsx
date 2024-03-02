@@ -16,6 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'EpisodeDetails'>;
 
 export default function EpisodeDetails({ route }: Props) {
     const play = useStore(state => state.player.play);
+    const playNext = useStore(state => state.player.playNext);
     const playLater = useStore(state => state.player.playLater);
     const download = useStore(state => state.downloads.add);
     const save = useStore(state => state.library.saveEpisode);
@@ -29,16 +30,17 @@ export default function EpisodeDetails({ route }: Props) {
     function showMenu() {
         showActionSheetWithOptions(
             {
-                options: ['Play', 'Play Later', 'Download', 'Save'],
+                options: ['Play', 'Play Next', 'Play Later', 'Download', 'Save'],
                 cancelButtonIndex: 2,
                 containerStyle: styles.menuContainer,
                 textStyle: styles.menuItem
             },
             buttonIndex => {
                 if (buttonIndex === 0) play(episode);
-                else if (buttonIndex === 1) playLater(episode);
-                else if (buttonIndex === 2) download(episode);
-                else if (buttonIndex === 3) save(episode);
+                else if (buttonIndex === 1) playNext(episode);
+                else if (buttonIndex === 2) playLater(episode);
+                else if (buttonIndex === 3) download(episode);
+                else if (buttonIndex === 4) save(episode);
             }
         );
     }
@@ -77,7 +79,8 @@ export default function EpisodeDetails({ route }: Props) {
                         source={{ html: episode.description }}
                         contentWidth={width}
                         baseStyle={{
-                            color: colors.onSurface
+                            color: colors.onSurface,
+                            textAlign: 'justify'
                         }}
                         tagsStyles={{
                             a: {

@@ -58,7 +58,8 @@ type Store = {
         updateProgress: (progress: number) => void;
         playNext: (episode: Episode) => void;
         playLater: (episode: Episode) => void;
-        reorder: (from: number, to: number) => void;
+        setQueue: (queue: Episode[]) => void;
+        removeFromQueue: (episode: Episode) => void;
 
         store: () => void;
         load: () => void;
@@ -219,13 +220,11 @@ const useStore = create<Store>()(immer((set, get) => ({
                         state.downloads.downloadInfo[episode.guid].date = Date.now();
                     })
                 } else {
-                    console.log('error 1');
                     set(state => {
                         state.downloads.downloadInfo[episode.guid].status = DownloadStatus.ERROR;
                     })
                 }
             } catch(_) {
-                console.log('error 2', _);
                 set(state => {
                     state.downloads.downloadInfo[episode.guid].status = DownloadStatus.ERROR;
                 })
@@ -302,7 +301,6 @@ const useStore = create<Store>()(immer((set, get) => ({
         queue: [] as Episode[],
 
         play: async (episode, start = true) => {
-            console.log('got here 2', episode);
             set(state => {
                 state.player.currentEpisode = episode;
             });
@@ -370,10 +368,14 @@ const useStore = create<Store>()(immer((set, get) => ({
                 state.player.queue.push(episode);
             });
         },
-        reorder: (from, to) => {
+        setQueue: (queue) => {
             set(state => {
-                const episodes = state.player.queue.splice(from, 1);
-                state.player.queue.splice(to, 0, ...episodes);
+                state.player.queue = queue;
+            });
+        },
+        removeFromQueue: (episode) => {
+            set(state => {
+                state.player.queue = state.player.queue.filter(e => e.guid !== episode.guid);
             });
         },
 

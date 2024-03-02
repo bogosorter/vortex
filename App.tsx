@@ -1,4 +1,4 @@
-import { StyleSheet, View, StatusBar, Appearance, Dimensions } from 'react-native';
+import { StyleSheet, StatusBar, Appearance } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -10,6 +10,7 @@ import ShowDetails from './components/ShowDetails';
 import EpisodeDetails from './components/EpisodeDetails';
 import DownloadedEpisodes from './components/DownloadedEpisodes';
 import SavedEpisodes from './components/SavedEpisodes';
+import Queue from './components/Queue';
 import Player from './components/Player';
 import { Show, Episode } from './utils/types';
 import colors, { darkColors } from './utils/colors';
@@ -21,6 +22,7 @@ export type RootStackParamList = {
     EpisodeDetails: { episode: Episode };
     DownloadedEpisodes: undefined;
     SavedEpisodes: undefined;
+    Queue: undefined;
 };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -78,6 +80,15 @@ export default function App() {
                             component={SavedEpisodes}
                             options={{
                                 title: 'Saved Episodes',
+                                headerStyle: { backgroundColor: colors.surface },
+                                headerTintColor: colors.onSurface,
+                            }}
+                        />
+                        <Stack.Screen
+                            name='Queue'
+                            component={Queue}
+                            options={{
+                                title: 'Queue',
                                 headerStyle: { backgroundColor: colors.surface },
                                 headerTintColor: colors.onSurface,
                             }}

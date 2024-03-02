@@ -31,6 +31,11 @@ export default function Home({ navigation }: Props) {
                             placeholder='Search'
                             onSubmitEditing={() => navigation.navigate('Search', { query })}
                         />
+                        <TouchableOpacity onPress={() => navigation.navigate('Queue')}>
+                            <View style={styles.navigationButton}>
+                                <MaterialIcons name='queue-music' size={28} color={colors.onSurfaceVariant} />
+                            </View>
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('SavedEpisodes')}>
                             <View style={styles.navigationButton}>
                                 <MaterialIcons name='library-add-check' size={28} color={colors.onSurfaceVariant} />

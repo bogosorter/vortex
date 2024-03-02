@@ -3,6 +3,7 @@ import { useActionSheet } from '@expo/react-native-action-sheet';
 import { useNavigation } from '@react-navigation/native';
 import Color from 'color';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Feather from 'react-native-vector-icons/Feather';
 import RenderHTML from 'react-native-render-html';
 import useStore from '../utils/store';
 import { navigationBarHeight } from '../utils/dimensions';
@@ -12,13 +13,16 @@ import colors from '../utils/colors';
 type Props = {
     episode: Episode;
     showArtwork?: boolean;
+    drag?: () => void;
 };
 
-export default function EpisodePreview({ episode, showArtwork = true }: Props) {
+export default function EpisodePreview({ episode, showArtwork = true, drag }: Props) {
     const play = useStore(state => state.player.play);
+    const playNext = useStore(state => state.player.playNext);
     const playLater = useStore(state => state.player.playLater);
     const download = useStore(state => state.downloads.add);
     const save = useStore(state => state.library.saveEpisode);
+    const removeFromQueue = useStore(state => state.player.removeFromQueue);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
 
@@ -34,16 +38,31 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
     function showMenu() {
         showActionSheetWithOptions(
             {
-                options: ['Play', 'Play Later', 'Download', 'Save'],
-                cancelButtonIndex: 2,
+                options: ['Play', 'Play Next', 'Play Later', 'Download', 'Save'],
+                cancelButtonIndex: -1,
                 containerStyle: styles.menuContainer,
                 textStyle: styles.menuItem
             },
             buttonIndex => {
                 if (buttonIndex === 0) play(episode);
-                else if (buttonIndex === 1) playLater(episode);
-                else if (buttonIndex === 2) download(episode);
-                else if (buttonIndex === 3) save(episode);
+                if (buttonIndex === 1) playNext(episode);
+                else if (buttonIndex === 2) playLater(episode);
+                else if (buttonIndex === 3) download(episode);
+                else if (buttonIndex === 4) save(episode);
+            }
+        );
+    }
+
+    function showRemoveMenu() {
+        showActionSheetWithOptions(
+            {
+                options: ['Remove from queue'],
+                cancelButtonIndex: -1,
+                containerStyle: styles.menuContainer,
+                textStyle: styles.menuItem
+            },
+            buttonIndex => {
+                if (buttonIndex === 0) removeFromQueue(episode);
             }
         );
     }
@@ -69,29 +88,42 @@ export default function EpisodePreview({ episode, showArtwork = true }: Props) {
                         </ImageBackground>
                     </View>
                 )}
-                    <TouchableOpacity onPress={openDetails} style={styles.text} onLongPress={showMenu}>
-                        <Text style={styles.title} numberOfLines={1}>
-                            {episode.title}
-                        </Text>
-                        <View style={styles.htmlContainer}>
-                            <RenderHTML
-                                source={{ html: episode.shortDescription }}
-                                contentWidth={width - 100}
-                                defaultTextProps={{
-                                    numberOfLines: 2
-                                }}
-                                tagsStyles={{
-                                    p: {
-                                        marginTop: 0,
-                                        textAlign: 'justify'
-                                    }
-                                }}
-                            />
-                        </View>
-                        <Text style={styles.info}>
-                            {duration}m • {date}
-                        </Text>
+                <TouchableOpacity
+                    onPress={openDetails}
+                    style={styles.text}
+                    onLongPress={showMenu}
+                >
+                    <Text style={styles.title} numberOfLines={1}>
+                        {episode.title}
+                    </Text>
+                    <View style={styles.htmlContainer}>
+                        <RenderHTML
+                            source={{ html: episode.shortDescription }}
+                            contentWidth={width - 100}
+                            defaultTextProps={{
+                                numberOfLines: 2
+                            }}
+                            tagsStyles={{
+                                p: {
+                                    marginTop: 0,
+                                    textAlign: 'justify'
+                                }
+                            }}
+                        />
+                    </View>
+                    <Text style={styles.info}>
+                        {duration}m • {date}
+                    </Text>
+                </TouchableOpacity>
+                {drag && (
+                    <TouchableOpacity style={styles.more} onPress={showRemoveMenu} onLongPress={drag}>
+                        <Feather
+                            name={'menu'}
+                            size={24}
+                            color={colors.onSurface}
+                        />
                     </TouchableOpacity>
+                )}
             </View>
         </View>
     );
@@ -147,5 +179,10 @@ const styles = StyleSheet.create({
     },
     menuItem: {
         color: colors.onSurface
+    },
+    more: {
+        width: 36,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
