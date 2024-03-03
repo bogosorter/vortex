@@ -15,22 +15,25 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 type Props = NativeStackScreenProps<RootStackParamList, 'EpisodeDetails'>;
 
 export default function EpisodeDetails({ route }: Props) {
+    const episode = route.params.episode;
+    
     const play = useStore(state => state.player.play);
     const playNext = useStore(state => state.player.playNext);
     const playLater = useStore(state => state.player.playLater);
     const download = useStore(state => state.downloads.add);
     const save = useStore(state => state.library.saveEpisode);
+    const removeSaved = useStore(state => state.library.removeSavedEpisode);
+    const saved = useStore(state => !!state.library.saved[episode.guid]);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
 
-    const episode = route.params.episode;
     const backgroundColor = new Color(episode.color).darken(0.5).hex();
     const styles = getStyles(backgroundColor);
 
     function showMenu() {
         showActionSheetWithOptions(
             {
-                options: ['Play', 'Play Next', 'Play Later', 'Download', 'Save'],
+                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save'],
                 cancelButtonIndex: 2,
                 containerStyle: styles.menuContainer,
                 textStyle: styles.menuItem
@@ -40,7 +43,10 @@ export default function EpisodeDetails({ route }: Props) {
                 else if (buttonIndex === 1) playNext(episode);
                 else if (buttonIndex === 2) playLater(episode);
                 else if (buttonIndex === 3) download(episode);
-                else if (buttonIndex === 4) save(episode);
+                else if (buttonIndex === 4) {
+                    if (saved) removeSaved(episode);
+                    else save(episode);
+                }
             }
         );
     }

@@ -22,6 +22,8 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
     const playLater = useStore(state => state.player.playLater);
     const download = useStore(state => state.downloads.add);
     const save = useStore(state => state.library.saveEpisode);
+    const removeSaved = useStore(state => state.library.removeSavedEpisode);
+    const saved = useStore(state => !!state.library.saved[episode.guid]);
     const removeFromQueue = useStore(state => state.player.removeFromQueue);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
@@ -38,7 +40,7 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
     function showMenu() {
         showActionSheetWithOptions(
             {
-                options: ['Play', 'Play Next', 'Play Later', 'Download', 'Save'],
+                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save'],
                 cancelButtonIndex: -1,
                 containerStyle: styles.menuContainer,
                 textStyle: styles.menuItem
@@ -48,7 +50,10 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
                 if (buttonIndex === 1) playNext(episode);
                 else if (buttonIndex === 2) playLater(episode);
                 else if (buttonIndex === 3) download(episode);
-                else if (buttonIndex === 4) save(episode);
+                else if (buttonIndex === 4) {
+                    if (saved) removeSaved(episode);
+                    else save(episode);
+                }
             }
         );
     }
