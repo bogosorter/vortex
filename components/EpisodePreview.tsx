@@ -116,7 +116,7 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
                     </Text>
                 </TouchableOpacity>
                 {drag && (
-                    <TouchableOpacity style={styles.more} onPress={showRemoveMenu} onLongPress={drag}>
+                    <TouchableOpacity style={styles.more} onPress={showRemoveMenu} onLongPress={drag} delayLongPress={100}>
                         <Feather
                             name={'menu'}
                             size={24}

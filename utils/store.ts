@@ -323,6 +323,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             if (start) await TrackPlayer.play();
 
             get().player.store();
+            get().player.removeFromQueue(episode);
         },
         onEnd: async () => {
             const episode = get().player.currentEpisode!;
@@ -360,12 +361,14 @@ const useStore = create<Store>()(immer((set, get) => ({
             get().library.storePlaybackStates();
         },
         playNext: (episode) => {
+            get().player.removeFromQueue(episode);
             set(state => {
                 state.player.queue.unshift(episode);
             });
             get().player.storeQueue();
         },
         playLater: (episode) => {
+            get().player.removeFromQueue(episode);
             set(state => {
                 state.player.queue.push(episode);
             });
