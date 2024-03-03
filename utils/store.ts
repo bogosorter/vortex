@@ -63,6 +63,8 @@ type Store = {
 
         store: () => void;
         load: () => void;
+        storeQueue: () => void;
+        loadQueue: () => void;
     }
 };
 
@@ -361,21 +363,25 @@ const useStore = create<Store>()(immer((set, get) => ({
             set(state => {
                 state.player.queue.unshift(episode);
             });
+            get().player.storeQueue();
         },
         playLater: (episode) => {
             set(state => {
                 state.player.queue.push(episode);
             });
+            get().player.storeQueue();
         },
         setQueue: (queue) => {
             set(state => {
                 state.player.queue = queue;
             });
+            get().player.storeQueue();
         },
         removeFromQueue: (episode) => {
             set(state => {
                 state.player.queue = state.player.queue.filter(e => e.guid !== episode.guid);
             });
+            get().player.storeQueue();
         },
 
         store: () => {
@@ -387,6 +393,15 @@ const useStore = create<Store>()(immer((set, get) => ({
                 state.player.currentEpisode = currentEpisode;
             });
             if (currentEpisode) get().player.play(currentEpisode, false);
+        },
+        storeQueue: () => {
+            storage.set('downloadQueue', JSON.stringify(get().player.queue));
+        },
+        loadQueue: () => {
+            const queue = JSON.parse(storage.getString('downloadQueue') || '[]');
+            set(state => {
+                state.player.queue = queue;
+            });
         }
     }
 })));
@@ -396,6 +411,7 @@ useStore.getState().library.loadSavedEpisodes();
 useStore.getState().library.loadPlaybackStates();
 useStore.getState().downloads.load();
 useStore.getState().downloads.clean();
+useStore.getState().player.loadQueue();
 (async () => {
     await setupPlayer();
     useStore.getState().player.load();
