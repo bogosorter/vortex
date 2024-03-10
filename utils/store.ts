@@ -316,9 +316,9 @@ const useStore = create<Store>()(immer((set, get) => ({
                 duration: episode.duration,
                 userAgent: 'vortex',
             });
-            const position = get().library.getPlaybackState(episode).position;
-            // If the episode is completely played, start from the beginning
-            await TrackPlayer.seekTo(episode.duration - position > 5? position : 0);
+
+            const playbackState = get().library.getPlaybackState(episode);
+            await TrackPlayer.seekTo(playbackState.played? 0 : playbackState.position);
             if (start) await TrackPlayer.play();
 
             get().player.store();
@@ -328,6 +328,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             const episode = get().player.currentEpisode!;
             set(state => {
                 state.library.playbackStates[episode.guid].position = 0;
+                state.library.playbackStates[episode.guid].played = true;
                 state.player.currentEpisode = null;
             });
 
@@ -356,6 +357,7 @@ const useStore = create<Store>()(immer((set, get) => ({
                     ...playbackState,
                     position: progress
                 };
+                if (episode.duration - progress < 10) state.library.playbackStates[episode.guid].played = true;
             });
             get().library.storePlaybackStates();
         },

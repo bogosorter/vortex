@@ -15,7 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function Home({ navigation }: Props) {
     const [query, setQuery] = useState('');
-    const shows = []; //useStore(store => store.library.shows);
+    const shows = useStore(store => store.library.shows);
     const feed = useStore(useShallow(store => store.library.getFeed()))
     const refresh = useStore(store => store.library.refresh);
 
@@ -62,17 +62,17 @@ export default function Home({ navigation }: Props) {
                         ))}
                     </ScrollView>
                 </>}
+                data={feed}
+                renderItem={({ item }) => <EpisodePreview episode={item} />}
+                keyExtractor={item => item.guid}
+                refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
+                contentContainerStyle={{ flex: 1 }}
                 ListEmptyComponent={
                     <View style={styles.welcomeCard}>
                         <AntDesign name='home' size={100} color={colors.onSurface} />
                         <Text style={styles.welcomeText}>Welcome! Search for a podcast to get started.</Text>
                     </View>
                 }
-                data={[]}
-                renderItem={({ item }) => <EpisodePreview episode={item} />}
-                keyExtractor={item => item.guid}
-                refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
-                contentContainerStyle={{ flex: 1 }}
             />
         </View>
     );
