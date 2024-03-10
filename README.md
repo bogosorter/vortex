@@ -11,6 +11,8 @@ Android podcast player
 - Fix RSS parsing (for example, TAL tags are not correctly parsed, Hard Fork's latest episode's apostrophes are not correctly parsed)
 - Add an "empty" message to home, queue, saved, downloaded and search screens
 - Add duration/publication date to episode details
+- Bug on play end
+- Played episodes not removed from feed
 
 - Website ;)
 

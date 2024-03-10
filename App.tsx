@@ -9,7 +9,7 @@ import Home from './components/Home';
 import Search from './components/Search';
 import ShowDetails from './components/ShowDetails';
 import EpisodeDetails from './components/EpisodeDetails';
-import DownloadedEpisodes from './components/DownloadedEpisodes';
+import Downloads from './components/Downloads';
 import SavedEpisodes from './components/SavedEpisodes';
 import Queue from './components/Queue';
 import Player from './components/Player';
@@ -72,7 +72,7 @@ export default function App() {
                         />
                         <Stack.Screen
                             name='DownloadedEpisodes'
-                            component={DownloadedEpisodes}
+                            component={Downloads}
                             options={{
                                 title: 'Downloaded Episodes',
                                 headerStyle: { backgroundColor: colors.surface },

@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { useState, useMemo } from 'react';
 import { CircleSnail } from 'react-native-progress';
 import Artwork from './Artwork';
@@ -22,12 +22,17 @@ export default function Search({ route, navigation }: Props) {
     }, []);
 
     const content = searching ? (
-        <View style={styles.loadingCircle}>
+        <View style={styles.center}>
             <CircleSnail size={100} thickness={8} indeterminate={true} color={colors.onSurface} />
         </View>
     ) : result === -1? (
-        <View style={styles.loadingCircle}>
+        <View style={styles.center}>
             <Feather name='wifi-off' size={80} color={colors.onSurface} />
+        </View>
+    ) : result.length === 0? (
+        <View style={styles.center}>
+            <Feather name='search' size={80} color={colors.onSurface} />
+            <Text style={styles.noResult}>No results</Text>
         </View>
     ) : (
         <ScrollView contentContainerStyle={styles.scrollView}>
@@ -68,9 +73,14 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-evenly'
     },
-    loadingCircle: {
+    center: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    noResult: {
+        fontSize: 30,
+        marginTop: 20,
+        color: colors.onSurface
     }
 });

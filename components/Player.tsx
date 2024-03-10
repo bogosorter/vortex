@@ -14,6 +14,8 @@ export default function Player() {
     const [unfolded, setUnfolded] = useState(false);
     useMemo(() => setUnfolded(false), [episode]);
 
+    const styles = getStyles(!!episode);
+
     if (!episode) return <View style={styles.placeholder} />;
     return (<>
         <FoldedPlayer onPress={() => setUnfolded(true)} />
@@ -31,9 +33,11 @@ export default function Player() {
     </>)
 }
 
-const styles = StyleSheet.create({
-    placeholder: {
-        height: navigationBarHeight,
-        backgroundColor: colors.surfaceVariant
-    }
-})
+function getStyles(playing: boolean) {
+    return StyleSheet.create({
+        placeholder: {
+            height: navigationBarHeight,
+            backgroundColor: playing? colors.surfaceVariant: colors.surface
+        }
+    });
+}

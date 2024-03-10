@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { StyleSheet, TextInput, View, FlatList, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, TextInput, View, FlatList, ScrollView, TouchableOpacity, RefreshControl, Image, Text } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import useStore from '../utils/store';
 import { useShallow } from 'zustand/react/shallow';
 import EpisodePreview from './EpisodePreview';
@@ -14,7 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function Home({ navigation }: Props) {
     const [query, setQuery] = useState('');
-    const shows = useStore(store => store.library.shows);
+    const shows = []; //useStore(store => store.library.shows);
     const feed = useStore(useShallow(store => store.library.getFeed()))
     const refresh = useStore(store => store.library.refresh);
 
@@ -61,10 +62,17 @@ export default function Home({ navigation }: Props) {
                         ))}
                     </ScrollView>
                 </>}
-                data={feed}
+                ListEmptyComponent={
+                    <View style={styles.welcomeCard}>
+                        <AntDesign name='home' size={100} color={colors.onSurface} />
+                        <Text style={styles.welcomeText}>Welcome! Search for a podcast to get started.</Text>
+                    </View>
+                }
+                data={[]}
                 renderItem={({ item }) => <EpisodePreview episode={item} />}
                 keyExtractor={item => item.guid}
                 refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
+                contentContainerStyle={{ flex: 1 }}
             />
         </View>
     );
@@ -99,5 +107,22 @@ const styles = StyleSheet.create({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    welcomeCard: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: 10,
+        padding: 40
+    },
+    logo: {
+        width: 250,
+        height: 250
+    },
+    welcomeText: {
+        fontSize: 20,
+        color: colors.onSurface,
+        textAlign: 'center',
+        marginTop: 40
     }
 });
