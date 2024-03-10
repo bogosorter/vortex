@@ -29,6 +29,7 @@ export default function Home({ navigation }: Props) {
                         <TextInput
                             style={styles.searchBox}
                             onChangeText={setQuery}
+                            placeholderTextColor={colors.onSurfaceVariant}
                             placeholder='Search'
                             onSubmitEditing={() => navigation.navigate('Search', { query })}
                         />
@@ -66,7 +67,7 @@ export default function Home({ navigation }: Props) {
                 renderItem={({ item }) => <EpisodePreview episode={item} />}
                 keyExtractor={item => item.guid}
                 refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
-                contentContainerStyle={{ flex: 1 }}
+                style={{ flex: 1 }}
                 ListEmptyComponent={
                     <View style={styles.welcomeCard}>
                         <AntDesign name='home' size={100} color={colors.onSurface} />

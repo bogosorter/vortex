@@ -33,6 +33,7 @@ type Store = {
         loadPlaybackStates: () => void;
     },
     downloads: {
+        downloads: Episode[];
         downloadInfo: { [key: string]: DownloadInfo };
 
         add: (episode: Episode) => Promise<void>;
@@ -40,7 +41,6 @@ type Store = {
         getInfo: (episode: Episode) => DownloadInfo;
         getPath: (episode: Episode) => string;
         createPath: (episode: Episode) => string;
-        getDownloadedEpisodes: () => Episode[];
         clean: () => void;
         clearError: (episode: Episode) => void;
 
@@ -109,10 +109,16 @@ const useStore = create<Store>()(immer((set, get) => ({
             return get().library.playbackStates[episode.guid] || { position: 0, played: false } as PlaybackState;
         },
         getAll: () => {
-            const savedEpisodes = get().library.savedEpisodes;
-            const episodesFromShows = get().library.shows.flatMap(show => show.episodes);
-            const saved = get().library.saved;
-            const result = savedEpisodes.concat(episodesFromShows.filter(episode => !saved[episode.guid]));
+            const result: Episode[] = [];
+            
+            result.push(...get().library.savedEpisodes);
+            result.push(...get().downloads.downloads.filter(episode => !get().library.saved[episode.guid]));
+            result.push(...get().library.shows.flatMap(show => show.episodes).filter(episode => {
+                const isSaved = get().library.saved[episode.guid];
+                const isDownloaded = get().downloads.getInfo(episode).status === DownloadStatus.DOWNLOADED;
+                return !isSaved && !isDownloaded;
+            }));
+
             return result.sort((a, b) => b.date - a.date);
         },
         getFeed: () => {
@@ -187,6 +193,7 @@ const useStore = create<Store>()(immer((set, get) => ({
     },
 
     downloads: {
+        downloads: [] as Episode[],
         downloadInfo: {} as { [key: string]: DownloadInfo },
 
         add: async (episode) => {
@@ -220,6 +227,7 @@ const useStore = create<Store>()(immer((set, get) => ({
                     set(state => {
                         state.downloads.downloadInfo[episode.guid].status = DownloadStatus.DOWNLOADED;
                         state.downloads.downloadInfo[episode.guid].date = Date.now();
+                        state.downloads.downloads.push(episode);
                     })
                 } else {
                     set(state => {
@@ -236,10 +244,10 @@ const useStore = create<Store>()(immer((set, get) => ({
         remove: async (episode) => {
             const downloadInfo = get().downloads.getInfo(episode);
             if (downloadInfo.status != DownloadStatus.DOWNLOADED) return;
-            const path = get().downloads.getPath(episode);
-            await RNFS.unlink(path);
+            await RNFS.unlink(get().downloads.getPath(episode));
             set(state => {
                 state.downloads.downloadInfo[episode.guid].status = DownloadStatus.NOT_DOWNLOADED;
+                state.downloads.downloads = state.downloads.downloads.filter(e => e.guid !== episode.guid);
             });
             get().downloads.store();
         },
@@ -264,16 +272,8 @@ const useStore = create<Store>()(immer((set, get) => ({
             get().downloads.store();
             return downloadDirectory + `/${id}.mp3`;
         },
-        getDownloadedEpisodes: () => {
-            const result = [];
-            for (const episode of get().library.getAll()) {
-                const info = get().downloads.getInfo(episode);
-                if (info.status === DownloadStatus.DOWNLOADED) result.push(episode);
-            }
-            return result;
-        },
         clean: () => {
-            for (const episode of get().downloads.getDownloadedEpisodes()) {
+            for (const episode of get().downloads.downloads) {
                 const downloadInfo = get().downloads.getInfo(episode);
                 const downloadAge = Date.now() - downloadInfo.date;
                 // Remove downloads after two weeks
@@ -288,11 +288,14 @@ const useStore = create<Store>()(immer((set, get) => ({
 
         store: () => {
             storage.set('downloadInfo', JSON.stringify(get().downloads.downloadInfo));
+            storage.set('downloads', JSON.stringify(get().downloads.downloads));
         },
         load: () => {
             const downloadInfo = JSON.parse(storage.getString('downloadInfo') || '{}');
+            const downloads = JSON.parse(storage.getString('downloads') || '[]');
             set(state => {
                 state.downloads.downloadInfo = downloadInfo as { [key: string]: DownloadInfo };
+                state.downloads.downloads = downloads as Episode[];
             });
         }
     },

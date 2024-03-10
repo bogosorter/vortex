@@ -1,14 +1,11 @@
 import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { useShallow } from 'zustand/react/shallow';
 import EpisodePreview from './EpisodePreview';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useStore from '../utils/store';
 import colors from '../utils/colors';
 
 export default function Downloads() {
-    const downloads = useStore(
-        useShallow(state => state.downloads.getDownloadedEpisodes())
-    );
+    const downloads = useStore(state => state.downloads.downloads);
 
     if (downloads.length === 0) return (
         <View style={styles.center}>
