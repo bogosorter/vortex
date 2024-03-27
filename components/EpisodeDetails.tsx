@@ -32,6 +32,8 @@ export default function EpisodeDetails({ route }: Props) {
 
     const backgroundColor = new Color(episode.color).darken(0.5).hex();
     const styles = getStyles(backgroundColor);
+    const duration = Math.round(episode.duration / 60);
+    const date = new Date(episode.date).toLocaleDateString();
 
     function showMenu() {
         showActionSheetWithOptions(
@@ -75,7 +77,7 @@ export default function EpisodeDetails({ route }: Props) {
                     <View style={styles.header}>
                         <View style={styles.headerText}>
                             <Text style={styles.title}>{episode.title}</Text>
-                            <Text style={styles.show}>{episode.showTitle}</Text>
+                            <Text style={styles.show}>{episode.showTitle} • {date} • {duration}m</Text>
                         </View>
                         <DownloadButton episode={episode} color={backgroundColor} />
                     </View>

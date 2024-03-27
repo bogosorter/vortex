@@ -8,13 +8,15 @@ import colors from '../utils/colors';
 
 export default function FoldedPlayer({onPress}: {onPress: () => void}) {
     const episode = useStore(state => state.player.currentEpisode)!;
+    const progress = useStore(state => state.library.getPlaybackState(episode).position);
+    const timeLeft = Math.round((episode.duration - progress) / 60);
 
     return (
         <TouchableOpacity style={styles.foldedPlayer} onPress={onPress}>
             <Artwork url={episode.artwork} size={60} margin={10} />
             <View style={styles.textWrapper}>
                 <Text numberOfLines={1} style={styles.title}>{episode.title}</Text>
-                <Text numberOfLines={1} style={styles.showTitle}>{episode.showTitle}</Text>
+                <Text numberOfLines={1} style={styles.showTitle}>{episode.showTitle} • {timeLeft}m left</Text>
             </View>
             <View style={styles.buttonContainer}>
                 <PlayerButton color={colors.surfaceVariant} backgroundColor={colors.onSurfaceVariant} />
