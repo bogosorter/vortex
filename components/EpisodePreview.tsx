@@ -27,6 +27,9 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
     const removeFromQueue = useStore(state => state.player.removeFromQueue);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
+    const played = useStore(state => state.library.getPlaybackState(episode).played);
+    const markPlayed = useStore(state => state.library.markPlayed);
+    const unmarkPlayed = useStore(state => state.library.unmarkPlayed);
 
     const duration = Math.round(episode.duration / 60);
     const date = new Date(episode.date).toLocaleDateString();
@@ -40,7 +43,7 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
     function showMenu() {
         showActionSheetWithOptions(
             {
-                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save'],
+                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save', played? 'Mark as unplayed' : 'Mark as played'],
                 cancelButtonIndex: -1,
                 containerStyle: styles.menuContainer,
                 textStyle: styles.menuItem
@@ -53,6 +56,10 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
                 else if (buttonIndex === 4) {
                     if (saved) removeSaved(episode);
                     else save(episode);
+                }
+                else if (buttonIndex === 5) {
+                    if (played) unmarkPlayed(episode);
+                    else markPlayed(episode);
                 }
             }
         );

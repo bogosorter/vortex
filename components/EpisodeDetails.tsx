@@ -26,6 +26,9 @@ export default function EpisodeDetails({ route }: Props) {
     const saved = useStore(state => !!state.library.saved[episode.guid]);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
+    const played = useStore(state => state.library.getPlaybackState(episode).played);
+    const markPlayed = useStore(state => state.library.markPlayed);
+    const unmarkPlayed = useStore(state => state.library.unmarkPlayed);
 
     const backgroundColor = new Color(episode.color).darken(0.5).hex();
     const styles = getStyles(backgroundColor);
@@ -33,7 +36,7 @@ export default function EpisodeDetails({ route }: Props) {
     function showMenu() {
         showActionSheetWithOptions(
             {
-                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save'],
+                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save', played? 'Mark as unplayed' : 'Mark as played'],
                 cancelButtonIndex: 2,
                 containerStyle: styles.menuContainer,
                 textStyle: styles.menuItem
@@ -46,6 +49,10 @@ export default function EpisodeDetails({ route }: Props) {
                 else if (buttonIndex === 4) {
                     if (saved) removeSaved(episode);
                     else save(episode);
+                }
+                else if (buttonIndex === 5) {
+                    if (played) unmarkPlayed(episode);
+                    else markPlayed(episode);
                 }
             }
         );

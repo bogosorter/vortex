@@ -24,6 +24,8 @@ type Store = {
         getFeed: () => Episode[];
         refresh: () => Promise<void>;
         refreshShow: (show: Show) => Promise<void>;
+        markPlayed: (episode: Episode) => void;
+        unmarkPlayed: (episode: Episode) => void;
 
         storeShows: () => void;
         loadShows: () => void;
@@ -152,6 +154,26 @@ const useStore = create<Store>()(immer((set, get) => ({
             });
             get().library.storeShows();
         },
+        markPlayed: (episode) => {
+            const playbackState = get().library.getPlaybackState(episode);
+            set(state => {
+                state.library.playbackStates[episode.guid] = {
+                    ...playbackState,
+                    played: true
+                };
+            });
+            get().library.storePlaybackStates();
+        },
+        unmarkPlayed: (episode) => {
+            const playbackState = get().library.getPlaybackState(episode);
+            set(state => {
+                state.library.playbackStates[episode.guid] = {
+                    ...playbackState,
+                    played: false
+                };
+            });
+            get().library.storePlaybackStates();
+        },
 
         storeShows: () => {
             storage.set('shows', JSON.stringify(get().library.shows));
@@ -210,7 +232,7 @@ const useStore = create<Store>()(immer((set, get) => ({
                 fromUrl: episode.url,
                 toFile: path,
                 headers: {
-                    'user-agent': 'vortex'
+                    'User-Agent': 'vortex'
                 },
                 progressInterval: 200,
                 progress: (e) => {
