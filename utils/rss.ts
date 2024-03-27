@@ -9,105 +9,54 @@
 // a little messy
 
 import { Show, Episode, ShowPreview } from './types';
+import { parseXml } from './parser';
 import { parseDuration } from './utils';
 
 export async function getShow(preview: ShowPreview) {
     const rss = await getRSS(preview.feedUrl);
     if (rss === -1) return -1;
+    const channel = rss.rss.channel[0];
 
-    const title = getFirst(rss, 'title')!;
-    const link = getFirst(rss, 'link')!;
-    const author = getFirst(rss, 'itunes:author')!;
-    const description = getFirst(rss, 'description')!;
-    const episodes = getAll(rss, 'item')!;
-
-    const show = {
-        title,
-        description,
-        author,
-        link,
+    const show: Show = {
+        title: channel.title[0],
+        description: channel.description[0],
+        author: channel['itunes:author'][0],
+        link: channel.link[0],
         artwork: preview.artwork,
         color: await preview.color,
-        episodes:  [],
+        episodes: [],
         feedUrl: preview.feedUrl
-    } as Show;
-    show.episodes = episodes.map((episode) => parseEpisode(show, episode));
-    show.episodes.sort((a, b) => b.date - a.date);
+    };
+    const episodes = await getEpisodes(show, rss);
+    if (episodes === -1) return -1;
+    show.episodes = episodes;
+
     return show;
 }
 
-export async function getEpisodes(show: Show) {
-    const rss = await getRSS(show.feedUrl);
-    if (rss === -1) return -1;
-    const result = getAll(rss, 'item').map((episode) => parseEpisode(show, episode));
-    return result.sort((a, b) => b.date - a.date);
-}
-
-function parseEpisode(show: Show, rss: string) {
-    const title = getFirst(rss, 'title')!;
-    let description = getFirst(rss, 'description')!;
-    if (description.startsWith('<![CDATA[')) description = description.substring(9, description.length - 3);
-    const shortDescription = getFirst(rss, 'itunes:summary') || description;
-    const date = new Date(getFirst(rss, 'pubDate')!).getTime();
-    const duration = parseDuration(getFirst(rss, 'itunes:duration')!);
-    const guid = title;
-    const url = getAttribute(rss, 'enclosure', 'url')!;
-    
-    return {
-        title,
-        description,
-        shortDescription,
-        showTitle: show.title,
-        artwork: show.artwork,
-        date,
-        duration,
-        color: show.color,
-        guid,
-        url
-    } as Episode;
-}
-
-function getFirst(rss: string, tagName: string) {
-    const tagStart = `<${tagName}`; // Keep in mind that the tag may have attributes
-    const tagEnd = `</${tagName}>`;
-
-    let startIndex = rss.indexOf(tagStart);
-    if (startIndex === -1) return null;
-    startIndex = rss.indexOf('>', startIndex) + 1;
-    const endIndex = rss.indexOf(tagEnd);
-
-    return rss.substring(startIndex, endIndex).trim();
-}
-
-function getAll(rss: string, tagName: string) {
-    const tagStart = `<${tagName}`;
-    const tagEnd = `</${tagName}>`;
-
-    const tags = [];
-    let currentIndex = 0;
-
-    while (currentIndex < rss.length) {
-        let startIndex = rss.indexOf(tagStart, currentIndex);
-        if (startIndex === -1) break;
-        startIndex = rss.indexOf('>', startIndex);
-        const endIndex = rss.indexOf(tagEnd, currentIndex) + 1;
-        tags.push(rss.substring(startIndex, endIndex).trim());
-        currentIndex = endIndex + tagEnd.length;
+export async function getEpisodes(show: Show, rss?: any) {
+    if (!rss) {
+        rss = await getRSS(show.feedUrl);
+        if (rss === -1) return -1;
     }
+    const channel = rss.rss.channel[0];
 
-    return tags;
-}
-
-function getAttribute(rss: string, tagName: string, attributeName: string) {
-    const start = `<${tagName}`;
-    const attributeStart = `${attributeName}="`;
-
-    let startIndex = rss.indexOf(start);
-    if (startIndex === -1) return null;
-    startIndex = rss.indexOf(attributeStart, startIndex) + attributeStart.length;
-    const endIndex = rss.indexOf('"', startIndex + attributeStart.length);
-
-    return rss.substring(startIndex, endIndex).trim();
+    const episodes: Episode[] = channel.item.map((episode: any) => {
+        return {
+            title: episode.title[0],
+            description: episode.description[0],
+            shortDescription: (episode['itunes:summary'] || episode.description)[0],
+            showTitle: show.title,
+            artwork: show.artwork,
+            date: new Date(episode.pubDate[0]).getTime(),
+            duration: parseDuration(episode['itunes:duration'][0]),
+            color: show.color,
+            guid: episode.title[0],
+            url: episode.enclosure[0].$.url
+        };
+    });
+    
+    return episodes.sort((a, b) => b.date - a.date);
 }
 
 async function getRSS(feedUrl: string) {
@@ -117,7 +66,8 @@ async function getRSS(feedUrl: string) {
                 'user-agent': 'vortex'
             }
         });
-        return await request.text();
+        const text = await request.text();
+        return parseXml(text);
     } catch {
         return -1;
     }
