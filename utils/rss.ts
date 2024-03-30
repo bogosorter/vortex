@@ -4,6 +4,7 @@
 import { Show, Episode, ShowPreview } from './types';
 import { parseXml } from './parser';
 import { parseDuration } from './utils';
+import userAgent from '../utils/userAgent';
 
 export async function getShow(preview: ShowPreview) {
     const rss = await getRSS(preview.feedUrl);
@@ -81,7 +82,7 @@ async function getRSS(feedUrl: string) {
     try {
         const request = await fetch(feedUrl, {
             headers: {
-                'user-agent': 'vortex'
+                'User-Agent': userAgent
             }
         });
         const text = await request.text();

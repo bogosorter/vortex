@@ -6,6 +6,7 @@ import TrackPlayer, { State as PlayerState } from 'react-native-track-player';
 import setupPlayer from './setupPlayer';
 import { getEpisodes } from './rss';
 import { Show, Episode, PlaybackState, DownloadInfo, DownloadStatus } from './types';
+import userAgent from './userAgent';
 
 type Store = {
     library: {
@@ -232,7 +233,7 @@ const useStore = create<Store>()(immer((set, get) => ({
                 fromUrl: episode.url,
                 toFile: path,
                 headers: {
-                    'User-Agent': 'vortex'
+                    'User-Agent': userAgent
                 },
                 progressInterval: 200,
                 progress: (e) => {
@@ -339,7 +340,7 @@ const useStore = create<Store>()(immer((set, get) => ({
                 url: get().downloads.getPath(episode),
                 artwork: episode.artwork,
                 duration: episode.duration,
-                userAgent: 'vortex',
+                userAgent: userAgent,
             });
 
             const playbackState = get().library.getPlaybackState(episode);
