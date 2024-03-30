@@ -249,7 +249,7 @@ const useStore = create<Store>()(immer((set, get) => ({
                     set(state => {
                         state.downloads.downloadInfo[episode.guid].status = DownloadStatus.DOWNLOADED;
                         state.downloads.downloadInfo[episode.guid].date = Date.now();
-                        state.downloads.downloads.push(episode);
+                        state.downloads.downloads.unshift(episode);
                     })
                 } else {
                     set(state => {
