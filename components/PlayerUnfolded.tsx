@@ -6,6 +6,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Color from 'color';
 import useStore from '../utils/store';
 import PlayerButton from './PlayerButton';
+import PlaybackRate from './PlaybackRate';
 import { darkColors } from '../utils/colors';
 
 export default function PlayerUnfolded() {
@@ -16,6 +17,7 @@ export default function PlayerUnfolded() {
     const seeking = useRef(false);
     const backgroundColor = new Color(episode.color).darken(0.5).string();
     const buttonColor = new Color(darkColors.onSurface).alpha(0.8).string();
+    const playbackRate = useStore(state => state.player.playbackRate);
 
     useEffect(() => {
         const id = setInterval(async () => {
@@ -61,6 +63,7 @@ export default function PlayerUnfolded() {
                     <MaterialIcons name={'forward-30'} size={40} color={buttonColor} />
                 </TouchableOpacity>
             </View>
+            <PlaybackRate />
         </View>
     )
 }
@@ -110,7 +113,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        marginTop: 30
+        marginTop: 20
     },
     buttonWrapper: {
         height: 48,

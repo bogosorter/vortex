@@ -54,6 +54,7 @@ type Store = {
         currentEpisode: Episode | null;
         state: PlayerState;
         queue: Episode[];
+        playbackRate: number;
 
         play: (episode: Episode, start?: boolean) => Promise<void>;
         onEnd: () => Promise<void>;
@@ -63,6 +64,8 @@ type Store = {
         playLater: (episode: Episode) => void;
         setQueue: (queue: Episode[]) => void;
         removeFromQueue: (episode: Episode) => void;
+        setPlaybackRate: (rate: number) => void;
+        loadPlaybackRate: () => void;
 
         store: () => void;
         load: () => void;
@@ -327,6 +330,7 @@ const useStore = create<Store>()(immer((set, get) => ({
         currentEpisode: null as Episode | null,
         state: PlayerState.None as PlayerState,
         queue: [] as Episode[],
+        playbackRate: 1,
 
         play: async (episode, start = true) => {
             set(state => {
@@ -413,6 +417,20 @@ const useStore = create<Store>()(immer((set, get) => ({
             });
             get().player.storeQueue();
         },
+        setPlaybackRate: (rate) => {
+            set(state => {
+                state.player.playbackRate = rate;
+            });
+            TrackPlayer.setRate(rate);
+            storage.set('playbackRate', String(rate));
+        },
+        loadPlaybackRate: () => {
+            const rate = Number(storage.getString('playbackRate') || '1');
+            set(state => {
+                state.player.playbackRate = rate;
+            });
+            TrackPlayer.setRate(rate);
+        },
 
         store: () => {
             storage.set('currentEpisode', JSON.stringify(get().player.currentEpisode));
@@ -442,6 +460,7 @@ useStore.getState().library.loadPlaybackStates();
 useStore.getState().downloads.load();
 useStore.getState().downloads.clean();
 useStore.getState().player.loadQueue();
+useStore.getState().player.loadPlaybackRate();
 (async () => {
     await setupPlayer();
     useStore.getState().player.load();

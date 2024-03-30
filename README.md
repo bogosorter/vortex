@@ -5,13 +5,11 @@ Simple android podcast player. See [website](https://bogosorter.github.io/vortex
 ## Roadmap
 
 ### v1.0.0
-- Correctly order episodes on downloads
-- Set a correct user agent - https://developers.whatismybrowser.com/learn/browser-detection/user-agents/user-agent-best-practices
 - Distinguish between <description> and <content:encoded>
 - Display show loading spinner from search
-- Adjust playback speed
 - Weird play button when streaming
 - Change date/duration rendering in episode details for long show titles
+- All Hard Fork episodes duplicated?
 
 ### v1.1.0
 - Implement auto-downloads
