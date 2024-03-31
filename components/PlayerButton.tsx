@@ -9,7 +9,7 @@ export default function PlayerButton({color, backgroundColor}: {color: string, b
     const onEnd = useStore(state => state.player.onEnd);
     const styles = getStyles(backgroundColor);
     
-    if (playerState === State.Playing || playerState == State.Buffering) return (
+    if (playerState === State.Playing) return (
         <TouchableOpacity onPress={(e) => {
             e.stopPropagation();
             TrackPlayer.pause();
