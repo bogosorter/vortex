@@ -13,7 +13,8 @@ export async function getShow(preview: ShowPreview) {
 
     if (!channel.title) return -1;
     const title = channel.title[0];
-    const description = channel.description? channel.description[0] : '';
+    const encodedContent = channel['content:encoded']? channel['content:encoded'][0] : null;
+    const description = encodedContent || channel.description? channel.description[0] : '';
     const author = channel['itunes:author']? channel['itunes:author'][0] : '';
     const link = channel.link? channel.link[0] : '';
     const artwork = preview.artwork;
@@ -47,7 +48,8 @@ export async function getEpisodes(show: Show, rss?: any) {
     let episodes: Episode[] = channel.item.map((episode: any) => {
         if (!episode.title) return null;
         const title = episode.title[0];
-        const description = episode.description? episode.description[0] : '';
+        const encodedContent = episode['content:encoded']? episode['content:encoded'][0] : null;
+        const description = encodedContent || episode.description? episode.description[0] : '';
         const shortDescription = episode['itunes:summary']? episode['itunes:summary'][0] : description;
         const showTitle = show.title;
         const artwork = show.artwork;

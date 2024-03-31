@@ -6,7 +6,6 @@ Simple android podcast player. See [website](https://bogosorter.github.io/vortex
 
 ### v1.0.0
 - Distinguish between <description> and <content:encoded>
-- Weird play button when streaming
 - Change date/duration rendering in episode details for long show titles
 - All Hard Fork episodes duplicated?
 - Add mark as played to episode menu
