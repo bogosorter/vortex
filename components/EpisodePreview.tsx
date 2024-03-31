@@ -8,6 +8,7 @@ import RenderHTML from 'react-native-render-html';
 import useStore from '../utils/store';
 import { navigationBarHeight } from '../utils/dimensions';
 import { Episode } from '../utils/types';
+import episodeMenu from '../utils/episodeMenu';
 import colors from '../utils/colors';
 
 type Props = {
@@ -18,18 +19,9 @@ type Props = {
 
 export default function EpisodePreview({ episode, showArtwork = true, drag }: Props) {
     const play = useStore(state => state.player.play);
-    const playNext = useStore(state => state.player.playNext);
-    const playLater = useStore(state => state.player.playLater);
-    const download = useStore(state => state.downloads.add);
-    const save = useStore(state => state.library.saveEpisode);
-    const removeSaved = useStore(state => state.library.removeSavedEpisode);
-    const saved = useStore(state => !!state.library.saved[episode.guid]);
     const removeFromQueue = useStore(state => state.player.removeFromQueue);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
-    const played = useStore(state => state.library.getPlaybackState(episode).played);
-    const markPlayed = useStore(state => state.library.markPlayed);
-    const unmarkPlayed = useStore(state => state.library.unmarkPlayed);
 
     const duration = Math.round(episode.duration / 60);
     const date = new Date(episode.date).toLocaleDateString();
@@ -41,28 +33,7 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
     }
 
     function showMenu() {
-        showActionSheetWithOptions(
-            {
-                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save', played? 'Mark as unplayed' : 'Mark as played'],
-                cancelButtonIndex: -1,
-                containerStyle: styles.menuContainer,
-                textStyle: styles.menuItem
-            },
-            buttonIndex => {
-                if (buttonIndex === 0) play(episode);
-                if (buttonIndex === 1) playNext(episode);
-                else if (buttonIndex === 2) playLater(episode);
-                else if (buttonIndex === 3) download(episode);
-                else if (buttonIndex === 4) {
-                    if (saved) removeSaved(episode);
-                    else save(episode);
-                }
-                else if (buttonIndex === 5) {
-                    if (played) unmarkPlayed(episode);
-                    else markPlayed(episode);
-                }
-            }
-        );
+        episodeMenu(showActionSheetWithOptions, episode);
     }
 
     function showRemoveMenu() {

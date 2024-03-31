@@ -6,9 +6,8 @@ import Color from 'color';
 import DownloadButton from './DownloadButton';
 import RenderHTML from 'react-native-render-html';
 import EpisodePlayButton from './EpisodePlayButton';
-import useStore from '../utils/store';
 import colors, { darkColors } from '../utils/colors';
-import { navigationBarHeight } from '../utils/dimensions';
+import episodeMenu from '../utils/episodeMenu';
 
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,18 +16,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'EpisodeDetails'>;
 export default function EpisodeDetails({ route }: Props) {
     const episode = route.params.episode;
     
-    const play = useStore(state => state.player.play);
-    const playNext = useStore(state => state.player.playNext);
-    const playLater = useStore(state => state.player.playLater);
-    const download = useStore(state => state.downloads.add);
-    const save = useStore(state => state.library.saveEpisode);
-    const removeSaved = useStore(state => state.library.removeSavedEpisode);
-    const saved = useStore(state => !!state.library.saved[episode.guid]);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
-    const played = useStore(state => state.library.getPlaybackState(episode).played);
-    const markPlayed = useStore(state => state.library.markPlayed);
-    const unmarkPlayed = useStore(state => state.library.unmarkPlayed);
 
     const backgroundColor = new Color(episode.color).darken(0.5).hex();
     const styles = getStyles(backgroundColor);
@@ -36,28 +25,7 @@ export default function EpisodeDetails({ route }: Props) {
     const date = new Date(episode.date).toLocaleDateString();
 
     function showMenu() {
-        showActionSheetWithOptions(
-            {
-                options: ['Play', 'Play Next', 'Play Later', 'Download', saved? 'Remove from saved' : 'Save', played? 'Mark as unplayed' : 'Mark as played'],
-                cancelButtonIndex: 2,
-                containerStyle: styles.menuContainer,
-                textStyle: styles.menuItem
-            },
-            buttonIndex => {
-                if (buttonIndex === 0) play(episode);
-                else if (buttonIndex === 1) playNext(episode);
-                else if (buttonIndex === 2) playLater(episode);
-                else if (buttonIndex === 3) download(episode);
-                else if (buttonIndex === 4) {
-                    if (saved) removeSaved(episode);
-                    else save(episode);
-                }
-                else if (buttonIndex === 5) {
-                    if (played) unmarkPlayed(episode);
-                    else markPlayed(episode);
-                }
-            }
-        );
+        episodeMenu(showActionSheetWithOptions, episode);
     }
 
     return (
@@ -168,16 +136,6 @@ function getStyles(backgroundColor: string) {
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center'
-        },
-        menuContainer: {
-            backgroundColor: colors.surface,
-            padding: 10,
-            paddingBottom: navigationBarHeight,
-            borderTopLeftRadius: 30,
-            borderTopRightRadius: 30
-        },
-        menuItem: {
-            color: colors.onSurface
         }
     });
 }

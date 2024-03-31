@@ -25,8 +25,8 @@ type Store = {
         getFeed: () => Episode[];
         refresh: () => Promise<void>;
         refreshShow: (show: Show) => Promise<void>;
-        markPlayed: (episode: Episode) => void;
-        unmarkPlayed: (episode: Episode) => void;
+        markAsPlayed: (episode: Episode) => void;
+        markAsUnplayed: (episode: Episode) => void;
 
         storeShows: () => void;
         loadShows: () => void;
@@ -158,7 +158,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             });
             get().library.storeShows();
         },
-        markPlayed: (episode) => {
+        markAsPlayed: (episode) => {
             const playbackState = get().library.getPlaybackState(episode);
             set(state => {
                 state.library.playbackStates[episode.guid] = {
@@ -168,7 +168,7 @@ const useStore = create<Store>()(immer((set, get) => ({
             });
             get().library.storePlaybackStates();
         },
-        unmarkPlayed: (episode) => {
+        markAsUnplayed: (episode) => {
             const playbackState = get().library.getPlaybackState(episode);
             set(state => {
                 state.library.playbackStates[episode.guid] = {
@@ -460,10 +460,10 @@ useStore.getState().library.loadPlaybackStates();
 useStore.getState().downloads.load();
 useStore.getState().downloads.clean();
 useStore.getState().player.loadQueue();
-useStore.getState().player.loadPlaybackRate();
 (async () => {
     await setupPlayer();
     useStore.getState().player.load();
+    useStore.getState().player.loadPlaybackRate();
 })();
 
 export default useStore;
