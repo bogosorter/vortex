@@ -22,3 +22,4 @@ Simple android podcast player. See [website](https://bogosorter.github.io/vortex
 - Remove linear gradient gap on unfolded player
 - Display show loading spinner from search
 - Only show one splash screen (instead of native + custom)
+- Improve queue controls

@@ -7,7 +7,7 @@ import colors from './colors';
 
 type ActionSheet = ReturnType<typeof useActionSheet>['showActionSheetWithOptions'];
 
-export default function episodeMenu(actionSheet: ActionSheet, episode: Episode) {
+function episodeMenu(actionSheet: ActionSheet, episode: Episode) {
     const saved = !!useStore.getState().library.saved[episode.guid];
     const played = !!useStore.getState().library.getPlaybackState(episode).played;
 
@@ -41,6 +41,22 @@ export default function episodeMenu(actionSheet: ActionSheet, episode: Episode) 
         }
     );
 }
+
+function episodeRemoveMenu(actionSheet: ActionSheet, episode: Episode) {
+    actionSheet(
+        {
+            options: ['Remove from queue'],
+            cancelButtonIndex: -1,
+            containerStyle: styles.menuContainer,
+            textStyle: styles.menuItem
+        },
+        buttonIndex => {
+            if (buttonIndex === 0) useStore.getState().player.removeFromQueue(episode);
+        }
+    );
+}
+
+export { episodeMenu, episodeRemoveMenu };
 
 const styles = StyleSheet.create({
     menuContainer: {

@@ -18,6 +18,7 @@ export default function Home({ navigation }: Props) {
     const shows = useStore(store => store.library.shows);
     const feed = useStore(useShallow(store => store.library.getFeed()))
     const refresh = useStore(store => store.library.refresh);
+    const [shownEpisodes, setShownEpisodes] = useState(30);
 
     useMemo(() => refresh(), []);
 
@@ -63,7 +64,9 @@ export default function Home({ navigation }: Props) {
                         ))}
                     </ScrollView>
                 </>}
-                data={feed}
+                data={feed.slice(0, shownEpisodes)}
+                onEndReached={() => setShownEpisodes(shownEpisodes * 2)}
+                onEndReachedThreshold={1}
                 renderItem={({ item }) => <EpisodePreview episode={item} />}
                 keyExtractor={item => item.guid}
                 refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}

@@ -8,7 +8,7 @@ import RenderHTML from 'react-native-render-html';
 import useStore from '../utils/store';
 import { navigationBarHeight } from '../utils/dimensions';
 import { Episode } from '../utils/types';
-import episodeMenu from '../utils/episodeMenu';
+import { episodeMenu, episodeRemoveMenu } from '../utils/episodeMenu';
 import colors from '../utils/colors';
 
 type Props = {
@@ -18,15 +18,13 @@ type Props = {
 };
 
 export default function EpisodePreview({ episode, showArtwork = true, drag }: Props) {
-    const play = useStore(state => state.player.play);
-    const removeFromQueue = useStore(state => state.player.removeFromQueue);
     const width = useWindowDimensions().width;
     const { showActionSheetWithOptions } = useActionSheet();
+    const navigation = useNavigation();
 
     const duration = Math.round(episode.duration / 60);
     const date = new Date(episode.date).toLocaleDateString();
     
-    const navigation = useNavigation();
     function openDetails() {
         // @ts-ignore
         navigation.navigate('EpisodeDetails', { episode });
@@ -37,17 +35,7 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
     }
 
     function showRemoveMenu() {
-        showActionSheetWithOptions(
-            {
-                options: ['Remove from queue'],
-                cancelButtonIndex: -1,
-                containerStyle: styles.menuContainer,
-                textStyle: styles.menuItem
-            },
-            buttonIndex => {
-                if (buttonIndex === 0) removeFromQueue(episode);
-            }
-        );
+        episodeRemoveMenu(showActionSheetWithOptions, episode);
     }
 
     return (
@@ -59,7 +47,7 @@ export default function EpisodePreview({ episode, showArtwork = true, drag }: Pr
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity onPress={(e) => {
                                     e.stopPropagation();
-                                    play(episode);
+                                    useStore.getState().player.play(episode);
                                 }}>
                                     <FontAwesome5
                                         name={'play-circle'}
