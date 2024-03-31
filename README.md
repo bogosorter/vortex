@@ -4,21 +4,14 @@ Simple android podcast player. See [website](https://bogosorter.github.io/vortex
 
 ## Roadmap
 
-### v1.0.0
-- Distinguish between <description> and <content:encoded>
-- Change date/duration rendering in episode details for long show titles
-- All Hard Fork episodes duplicated?
-- Add mark as played to episode menu
-
 ### v1.1.0
 - Implement auto-downloads
-- https://podinfra.net/app-developers/episode-order.html
-- https://podinfra.net/app-developers/displaying-titles.html
-- https://podinfra.net/app-developers/rss-scrapers.html
-- Tackle performance issues
-- Mark trailers differently (for an example see podclock)
-- Separate episodes from different seasons
+- Order episodes by episode number/season and mark trailers differently (https://podinfra.net/app-developers/episode-order.html)
+- Ensure compliance with iTunes title standards (https://podinfra.net/app-developers/displaying-titles.html)
+- Explore PodPing and WebSub (https://podinfra.net/app-developers/rss-scrapers.html)
 - Remove linear gradient gap on unfolded player
-- Display show loading spinner from search
+- Display show loading spinner while fetching/processing RSS on search
 - Only show one splash screen (instead of native + custom)
 - Improve queue controls
+- Investigate why adding more episodes to home is slow
+- Add currently playing episode to queue when another episode is played over it

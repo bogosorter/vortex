@@ -18,7 +18,7 @@ export default function Home({ navigation }: Props) {
     const shows = useStore(store => store.library.shows);
     const feed = useStore(useShallow(store => store.library.getFeed()))
     const refresh = useStore(store => store.library.refresh);
-    const [shownEpisodes, setShownEpisodes] = useState(30);
+    const [shownEpisodes, setShownEpisodes] = useState(100);
 
     useMemo(() => refresh(), []);
 

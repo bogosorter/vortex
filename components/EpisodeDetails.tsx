@@ -7,7 +7,7 @@ import DownloadButton from './DownloadButton';
 import RenderHTML from 'react-native-render-html';
 import EpisodePlayButton from './EpisodePlayButton';
 import colors, { darkColors } from '../utils/colors';
-import episodeMenu from '../utils/episodeMenu';
+import { episodeMenu } from '../utils/episodeMenu';
 
 import { RootStackParamList } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -44,8 +44,9 @@ export default function EpisodeDetails({ route }: Props) {
                 <View style={styles.headerWrapper}>
                     <View style={styles.header}>
                         <View style={styles.headerText}>
+                            <Text style={styles.show}>{date} • {duration}m</Text>
                             <Text style={styles.title}>{episode.title}</Text>
-                            <Text style={styles.show}>{episode.showTitle} • {date} • {duration}m</Text>
+                            <Text style={styles.show}>{episode.showTitle}</Text>
                         </View>
                         <DownloadButton episode={episode} color={backgroundColor} />
                     </View>
