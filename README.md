@@ -14,4 +14,3 @@ Simple android podcast player. See [website](https://bogosorter.github.io/vortex
 - Only show one splash screen (instead of native + custom)
 - Improve queue controls
 - Investigate why adding more episodes to home is slow
-- Add currently playing episode to queue when another episode is played over it

@@ -333,6 +333,8 @@ const useStore = create<Store>()(immer((set, get) => ({
         playbackRate: 1,
 
         play: async (episode, start = true) => {
+            if (get().player.currentEpisode) await get().player.playNext(get().player.currentEpisode!);
+
             set(state => {
                 state.player.currentEpisode = episode;
             });            
@@ -461,9 +463,12 @@ useStore.getState().downloads.load();
 useStore.getState().downloads.clean();
 useStore.getState().player.loadQueue();
 (async () => {
-    await setupPlayer();
+    // There is no way to check if the player is already set up
+    try {
+        await TrackPlayer.setupPlayer();
+    } catch(_) {}
     useStore.getState().player.load();
     useStore.getState().player.loadPlaybackRate();
 })();
 
-export default useStore;
+export default useStore
