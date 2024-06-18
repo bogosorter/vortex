@@ -4,6 +4,9 @@ Simple android podcast player. See [website](https://bogosorter.github.io/vortex
 
 ## Roadmap
 
+### v1.0.0
+- Add an update notice
+
 ### v1.1.0
 - Implement auto-downloads
 - Order episodes by episode number/season and mark trailers differently (https://podinfra.net/app-developers/episode-order.html)
