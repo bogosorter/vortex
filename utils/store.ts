@@ -463,10 +463,7 @@ useStore.getState().downloads.load();
 useStore.getState().downloads.clean();
 useStore.getState().player.loadQueue();
 (async () => {
-    // There is no way to check if the player is already set up
-    try {
-        await TrackPlayer.setupPlayer();
-    } catch(_) {}
+    await setupPlayer();
     useStore.getState().player.load();
     useStore.getState().player.loadPlaybackRate();
 })();
